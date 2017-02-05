@@ -1,0 +1,9 @@
+Chatquery skapar knapparna och actionlisteners enligt medföljande bild. 
+
+
+
+Kryptering: Man trycker in en av kryptoknapparna under tiden man skriver om man vill ha en del av eller hela meddelandet krypterat.
+
+Sendfile skapar ny tråd
+
+Servertråden vid multisamtal alternerar vilken socket den försöker få data från, fås ett meddelande så tar den emot det och fortsätter sedan alternera.
