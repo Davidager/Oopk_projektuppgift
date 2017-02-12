@@ -6,26 +6,29 @@ import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.net.InetAddress;
 import java.io.*;
+import java.net.Socket;
 
 /**
  * Created by Dexter on 2017-02-08.
  */
 public class MainFrame extends JFrame implements ActionListener {
-    JEditorPane textInpServer, textClientPort, textClientIP, nameInputField;
-    JButton okServerButton, okClientButton, closeMain;
-    JComboBox colorSelector;
-    ListeningThread listeningThread;
-    int serverPortNumber, hostPortNumber;
-    InetAddress hostIP;
-    String name, textColor;
+    private JTextField textInpServer, textClientPort, textClientIP, nameInputField;
+    private JButton okServerButton, okClientButton, closeMain;
+    private JComboBox colorSelector;
+    private ListeningThread listeningThread;
+    private ChatThread chatThread;
+    private int serverPortNumber, hostPortNumber;
+    private InetAddress hostIP;
+    private String name, textColor;
+    private Socket socket;
 
     public MainFrame(){
         //kasta in alla visuella grejer i mainframe här
         setLayout(new BoxLayout(getContentPane(), BoxLayout.PAGE_AXIS));
-        textInpServer = new JEditorPane();
-        textClientPort = new JEditorPane();
-        textClientIP = new JEditorPane();
-        nameInputField = new JEditorPane();
+        textInpServer = new JTextField();
+        textClientPort = new JTextField();
+        textClientIP = new JTextField();
+        nameInputField = new JTextField();
 
         JLabel label1 = new JLabel("Ange namn och färg nedan",JLabel.LEADING);
         JLabel label2 = new JLabel("Ange portnummer", JLabel.LEADING);
@@ -69,11 +72,13 @@ public class MainFrame extends JFrame implements ActionListener {
             okClientButtonPressed();
         }
         if (e.getSource() == okServerButton);{
-            serverPortNumber = Integer.parseInt(textInpServer.getText());
             name = nameInputField.getText();
             textColor = (String)colorSelector.getSelectedItem();
-            okServerButtonPressed();
-            System.out.println("hi");
+            if (name.length() != 0 && textInpServer.getText().length() != 0){
+                serverPortNumber = Integer.parseInt(textInpServer.getText());
+                okServerButtonPressed();
+            }
+            //lägga till ett felmeddelande som else här
         }
     }
 
