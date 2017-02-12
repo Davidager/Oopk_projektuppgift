@@ -11,10 +11,10 @@ import java.util.List;
 public class ListeningThread extends Thread implements Runnable {
     private int portNumber;
     private String name,textColor;
-    ServerSocket serverSocket;
-    ArrayList threadList;
-    Socket clientSocket;
-    ServerChatThread serverChatThread;
+    private ServerSocket serverSocket;
+    private ArrayList<ServerChatThread> threadList;
+    private Socket clientSocket;
+
 
 
     public ListeningThread(int portNumber, String name, String textColor){
@@ -54,33 +54,30 @@ public class ListeningThread extends Thread implements Runnable {
     public void createChatQuery(Socket clientSocket){
         JFrame frame = new JFrame();
         //Object[] possibilities = {"ham", "spam", "yam"};
-        threadList.add("Tråd 1");  //dummies som ska tas bort
-        threadList.add("Tråd 2");
-        Object newChat = "Ny chat";
-        ArrayList optionsList = new ArrayList(1 + threadList.size());
-        optionsList.add(0, newChat);
-        for (int i=0; i<threadList.size();i++){
-            optionsList.add(i+1, threadList.get(i));
+        //threadList.add("Tråd 1");  //dummies som ska tas bort
+        //threadList.add("Tråd 2");
+        String newChat = "Ny chat";
+        Object[] possibilities = new Object[1 + threadList.size()];
+        possibilities[0] = newChat;
+        for (int i=1; i<threadList.size();i++){
+            possibilities[i] = threadList.get(i-1);
         }
-        Object[] possibilities = optionsList.toArray();
 
-        Object obj = JOptionPane.showInputDialog(frame, "Vill du ansluta?", "Chattförfrågan",JOptionPane.PLAIN_MESSAGE, null, possibilities, "Ny chat");
+        Object obj = JOptionPane.showInputDialog(frame, "Vill du ansluta?", "Chattförfrågan",JOptionPane.PLAIN_MESSAGE, null, possibilities, possibilities[0]);
         //System.out.println(s);
 
-        if (obj == newChat){
-            createNewThread(clientSocket, name, textColor);
-            threadList.add(obj);
-        }if (obj == null){
-            System.out.println("kaoz");
+        if (obj.equals(newChat)){
+            threadList.add(createNewThread(clientSocket, name, textColor));
         }else {
-            serverChatThread = (ServerChatThread)obj;
+            ServerChatThread serverChatThread = (ServerChatThread)obj;
             addToThread(serverChatThread);
         }
     }
     public void addToThread(ServerChatThread serverChatThread){
 
     }
-    public void createNewThread(Socket clientSocket, String name, String textColor){
-        new ServerChatThread(clientSocket, name, textColor);
+    public ServerChatThread createNewThread(Socket clientSocket, String name, String textColor){
+        ServerChatThread svc = new ServerChatThread(clientSocket, name, textColor);
+        return svc;
     }
 }
