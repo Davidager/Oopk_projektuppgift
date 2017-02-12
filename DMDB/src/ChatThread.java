@@ -9,8 +9,11 @@ public class ChatThread extends Thread{
     private int portNumber;
     private String name,textColor;
     private InetAddress hostIP;
+    private Socket socket;
 
-    public ChatThread(InetAddress hostIP, int portNumber, String name, String textColor){
-
+    public ChatThread(Socket socket, String name, String textColor){
+        this.socket = socket;
+        this.name = name;
+        this.textColor = textColor;
     }
 }
