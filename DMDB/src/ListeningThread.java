@@ -70,11 +70,11 @@ public class ListeningThread extends Thread implements Runnable {
             threadList.add(createNewThread(clientSocket, name, textColor));
         }else {
             ServerChatThread serverChatThread = (ServerChatThread)obj;
-            addToThread(serverChatThread);
+            addToThread(serverChatThread, clientSocket);
         }
     }
-    public void addToThread(ServerChatThread serverChatThread){
-
+    public void addToThread(ServerChatThread serverChatThread, Socket clientSocket){
+        serverChatThread.addToSocketList(clientSocket); // Vi lägger till den nya socketen till tråden
     }
     public ServerChatThread createNewThread(Socket clientSocket, String name, String textColor){
         ServerChatThread svc = new ServerChatThread(clientSocket, name, textColor);
