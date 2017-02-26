@@ -19,11 +19,20 @@ public class XmlParser {
     private String communicationType;
 
     public String parse(String xmlString) {
+        String retString = "";
         try {
             DocumentBuilder db = DocumentBuilderFactory.newInstance().newDocumentBuilder();
             Document doc = db.parse(new InputSource(new StringReader(xmlString)));
             communicationType = doc.getDocumentElement().getNodeName();
             if (communicationType == "message") {
+                retString = innerXml(doc.getDocumentElement());
+
+                NodeList encryptedList = doc.getElementsByTagName("encrypted");
+                if (encryptedList.getLength() > 0) {
+                    String[] retParts = retString.split("<encrypted>");
+                    //retParts =
+                    //dekryptera
+                }
 
             }
         } catch (ParserConfigurationException e) {

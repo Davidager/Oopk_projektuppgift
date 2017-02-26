@@ -16,49 +16,52 @@ public class ChatFrame extends JFrame implements ActionListener{
     private JToggleButton aesButton, caesarButton;
     private JTextPane myText;
     private JTextPane chatText;
+
     private ChatThread chatThread;
-    private SimpleAttributeSet attributeSet;
+    private Color myColor;
+    private String myName;
 
-    private StyledEditorKit.BoldAction aesBoldActionListener;
-    private StyledEditorKit.ItalicAction caesarItalicActionListener;
-
-    //private JFrame chatFrame;
-
-    public ChatFrame(ChatThread chatThread){
-        this();
+    public ChatFrame(ChatThread chatThread, String myName, Color myColor){
+        this(myName, myColor);
         this.chatThread=chatThread;
 
         //fortsätt här!
 
     }
 
-    public ChatFrame() {
+    public ChatFrame(String myName, Color myColor) {
+        this.myName = myName;
+        this.myColor = myColor;
+
         windowPanel = new JPanel();
         windowPanel.setLayout(new BoxLayout(windowPanel, BoxLayout.PAGE_AXIS));
 
         sendButton = new JButton("Skicka");
         discButton = new JButton("Koppla bort");
         fileButton = new JButton("Filöverföring");
-        aesButton = new JToggleButton("AES");
-        caesarButton = new JToggleButton("Caesar");
+        aesButton = new JToggleButton(new StyledEditorKit.BoldAction());
+        aesButton.setText("AES");
+        caesarButton = new JToggleButton(new StyledEditorKit.ItalicAction());
+        caesarButton.setText("Caesar");
 
         chatText = new JTextPane();
         chatText.setPreferredSize(new Dimension(500, 300));
         chatText.setEditable(false);
+
 
         JPanel lowerPanel = new JPanel();
 
         myText = new JTextPane();
         myText.setPreferredSize(new Dimension(300,50));
         setUpEnterProperly(myText);
-        attributeSet = new SimpleAttributeSet();
-        StyleConstants.setBold(attributeSet, false);
-        myText.getStyledDocument().setCharacterAttributes(0, myText.getText().length(), attributeSet, false);
-
-
-
-
-
+        myText.setCaret(new NoTextSelectionCaret());
+        myText.setHighlighter(null);
+        myText.addCaretListener(new CaretListener() {
+            public void caretUpdate(CaretEvent e) {
+                updateEncryptButtons();
+                //System.out.println(myText.getStyledDocument().getCharacterElement(myText.getCaretPosition()-1).getAttributes().containsAttribute(StyleConstants.Bold, true));
+            }
+        });
 
         JPanel buttonPanel = new JPanel();
         buttonPanel.setLayout(new GridLayout(2,2));
@@ -72,19 +75,7 @@ public class ChatFrame extends JFrame implements ActionListener{
         discButton.addActionListener(this);
         fileButton.addActionListener(this);
         aesButton.addActionListener(this);
-        myText.addCaretListener(new CaretListener() {
-            public void caretUpdate(CaretEvent e) {
-                updateEncryptButtons();
-            }
-        });
-
-        aesBoldActionListener = new StyledEditorKit.BoldAction();
-        //aesButton.addActionListener(ae);
         caesarButton.addActionListener(this);
-        caesarItalicActionListener = new StyledEditorKit.ItalicAction();
-
-        //caesarButton.addActionListener(new StyledEditorKit.ItalicAction());
-
 
         lowerPanel.add(new JScrollPane(myText));
         lowerPanel.add(buttonPanel);
@@ -95,7 +86,9 @@ public class ChatFrame extends JFrame implements ActionListener{
         add(windowPanel);
         pack();
         setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);  //måste nog tas bort
+        myText.grabFocus();
         setVisible(true);
+
     }
 
     public void actionPerformed(ActionEvent e) {
@@ -106,50 +99,46 @@ public class ChatFrame extends JFrame implements ActionListener{
 
         }
         if (e.getSource() == fileButton) {
-
+            System.out.println(myText.getText());
         }
-        if (e.getSource() == aesButton) { //|| e.getSource() == caesarButton) {
+        if (e.getSource() == aesButton) {
+
             if (caesarButton.isSelected()){
-                caesarButton.setSelected(false);
-                caesarItalicActionListener.actionPerformed(new ActionEvent
-                        (this, ActionEvent.ACTION_PERFORMED, null){});
+                aesButton.setSelected(false);
+                caesarButton.doClick();
+                aesButton.setSelected(true);
 
             }
-            aesBoldActionListener.actionPerformed(new ActionEvent
-                    (this, ActionEvent.ACTION_PERFORMED, null){});
+            myText.grabFocus();
         }
         if (e.getSource() == caesarButton) {
             if (aesButton.isSelected()) {
-                aesButton.setSelected(false);
-                aesBoldActionListener.actionPerformed(new ActionEvent
-                        (this, ActionEvent.ACTION_PERFORMED, null){});
+                caesarButton.setSelected(false);
+                aesButton.doClick();
+                caesarButton.setSelected(true);
 
             }
-            System.out.println("1" + myText.getCharacterAttributes().getAttribute(StyleConstants.Italic));
-            caesarItalicActionListener.actionPerformed(new ActionEvent
-                    (this, ActionEvent.ACTION_PERFORMED, null){});
             myText.grabFocus();
-
-            System.out.println(myText.getCharacterAttributes().getAttribute(StyleConstants.Italic));
         }
 
         if (e.getSource() == myText) {
-            updateEncryptButtons();
+            //updateEncryptButtons();
         }
     }
 
     private void updateEncryptButtons () {
-        AttributeSet attributeSet = myText.getCharacterAttributes();
-        System.out.println(myText.getStyledDocument().getCharacterElement(myText.getCaretPosition()-1).getAttributes().containsAttribute(StyleConstants.Italic, true));
-        if ((boolean)attributeSet.getAttribute(StyleConstants.Bold)) {
-            System.out.println(attributeSet.getAttribute(StyleConstants.Bold));
+        //AttributeSet attributeSet = myText.getCharacterAttributes();
+        AttributeSet attributeSet = myText.getStyledDocument().getCharacterElement(myText.getCaretPosition()-1).getAttributes();
+        //System.out.println(myText.getStyledDocument().getCharacterElement(myText.getCaretPosition()-1).getAttributes().containsAttribute(StyleConstants.Italic, true));
+        if (attributeSet.containsAttribute(StyleConstants.Bold, true)) {
+            //System.out.println(attributeSet.getAttribute(StyleConstants.Bold));
             if (!aesButton.isSelected()) {
                 aesButton.setSelected(true);
             }
             if (caesarButton.isSelected()) {
                 caesarButton.setSelected(false);
             }
-        } else if ((boolean)attributeSet.getAttribute(StyleConstants.Italic)) {
+        } else if (attributeSet.containsAttribute(StyleConstants.Italic, true)) {
             if (!caesarButton.isSelected()) {
                 caesarButton.setSelected(true);
             }
@@ -159,8 +148,6 @@ public class ChatFrame extends JFrame implements ActionListener{
         } else {
             if (caesarButton.isSelected()) {
                 caesarButton.setSelected(false);
-                System.out.println("caaaa");
-                System.out.println(attributeSet.getAttribute(StyleConstants.Italic));
             }
             if (aesButton.isSelected()) {
                 aesButton.setSelected(false);
@@ -184,14 +171,44 @@ public class ChatFrame extends JFrame implements ActionListener{
     }
 
     private void submitText() {
+
         String textMessage = myText.getText();
         if (textMessage.isEmpty()) return;   // inte skicka något om inget är inskrivet
-        System.out.println("asdasdasd");
+        //StringBuilder stringBuilder = new StringBuilder(textMessage);
 
+        // lägg till krypto-taggar
+
+        System.out.println(textMessage);
+
+        writeToChat(textMessage, myName, myColor);
+        textMessage = "<message>" + textMessage + "</message>";
+        //sendToOthers(textMessage);
+
+        myText.setText("");
+    }
+
+    public void writeToChat(String text, String name, Color color) {
+        StyledDocument chatDoc = chatText.getStyledDocument();
+
+        SimpleAttributeSet keyWord = new SimpleAttributeSet();
+        StyleConstants.setForeground(keyWord, Color.RED);
+
+        try {
+            chatDoc.insertString(chatDoc.getLength(), name + ": " + text + "\n", keyWord);
+        } catch (Exception e) {
+            System.out.println(e);
+        }
     }
 
     public static void main(String[] args) {
-        new ChatFrame();
+        new ChatFrame("david", Color.RED);
+    }
+
+    private class NoTextSelectionCaret extends DefaultCaret {
+        @Override
+        public int getMark() {
+            return getDot();
+        }
     }
 
 
