@@ -7,6 +7,7 @@ import java.awt.event.ActionListener;
 import java.net.InetAddress;
 import java.io.*;
 import java.net.Socket;
+import java.net.UnknownHostException;
 
 /**
  * Created by Dexter on 2017-02-08.
@@ -64,12 +65,29 @@ public class MainFrame extends JFrame implements ActionListener {
     }
 
     public void okClientButtonPressed(){
-        //chatThread = new ChatThread(socket, name, textColor);
+        try{
+            socket = new Socket(hostIP, hostPortNumber);
+        } catch (IOException f){
+            System.out.println("boom");
+        }
+
+        chatThread = new ChatThread(socket, name, textColor);
     }
 
     public void actionPerformed(ActionEvent e){
         if (e.getSource() == okClientButton);{
-            okClientButtonPressed();
+            name = nameInputField.getText();
+            textColor = (String)colorSelector.getSelectedItem();
+            if (name.length() != 0 && textClientPort.getText().length() != 0 && textClientIP.getText().length() !=0){
+                hostPortNumber = Integer.parseInt(textClientPort.getText());
+                try{
+                    hostIP = InetAddress.getByName(textClientIP.getText());
+                }catch(UnknownHostException e1){
+                    System.out.println("IP failed: " + hostIP);
+                    System.exit(-1);
+                }
+                okClientButtonPressed();
+            }
         }
         if (e.getSource() == okServerButton);{
             name = nameInputField.getText();
