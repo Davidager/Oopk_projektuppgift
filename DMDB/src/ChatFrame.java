@@ -96,7 +96,7 @@ public class ChatFrame extends JFrame implements ActionListener{
             submitText();
         }
         if (e.getSource() == discButton) {
-
+            disconnect();
         }
         if (e.getSource() == fileButton) {
             System.out.println(myText.getText());
@@ -155,6 +155,10 @@ public class ChatFrame extends JFrame implements ActionListener{
         }
     }
 
+    protected void disconnect() {
+        chatThread.closeThread();
+    }
+
     // Gör så att man kan skicka med enter, och skapa ny rad med shift + enter
     private void setUpEnterProperly(JTextPane textPane) {
         InputMap iMap = textPane.getInputMap();
@@ -168,6 +172,18 @@ public class ChatFrame extends JFrame implements ActionListener{
             }
 
         });
+    }
+
+    protected String getMyName() {
+        return myName;
+    }
+
+    protected Color getMyColor() {
+        return myColor;
+    }
+
+    protected JTextPane getMyText() {
+        return myText;
     }
 
     private void submitText() {

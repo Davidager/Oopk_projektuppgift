@@ -18,6 +18,8 @@ public class ChatThread extends Thread implements Runnable{
     private PrintWriter outText;
     private InputStream inFile;
     private OutputStream outFile;
+    private Thread receivingThread;
+    private Boolean done;
 
     public ChatThread(Socket socket, String name, String textColor){
         this.socket = socket;
@@ -35,13 +37,13 @@ public class ChatThread extends Thread implements Runnable{
         }
 
         chatFrame = new ChatFrame("sdf", Color.RED);
-        Thread thread = new Thread(this);
-        thread.start();
+        receivingThread = new Thread(this);
+        receivingThread.start();
 
     }
 
     public void run(){
-        boolean done = false;
+        done = false;
         while(!done){
             try{
                 String s = inText.readLine();
@@ -60,6 +62,8 @@ public class ChatThread extends Thread implements Runnable{
     }
 
     public void closeThread(){
+        done = true;    //hur funkar detta med reveivingthread?
+        receivingThread.stop();  //hur göra?
 
     }
 
