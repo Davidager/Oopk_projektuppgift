@@ -9,6 +9,7 @@ import org.xml.sax.SAXException;
 import javax.xml.parsers.DocumentBuilder;
 import javax.xml.parsers.DocumentBuilderFactory;
 import javax.xml.parsers.ParserConfigurationException;
+import java.awt.*;
 import java.io.IOException;
 import java.io.StringReader;
 
@@ -23,11 +24,17 @@ public class XmlParser {
             Document doc = db.parse(new InputSource(new StringReader(xmlString)));
             Node rootNode = doc.getDocumentElement();
             if (rootNode.getNodeName().equals("message")) {
+                String name = "";
+                name = rootNode.getAttributes().getNamedItem("sender").getNodeValue();
+                String colorString = "";
                 NodeList nodeList = rootNode.getChildNodes();
                 Node nodeItem;
                 for (int i = 0; i < nodeList.getLength(); i++) {
                     nodeItem = nodeList.item(i);
+
+
                     if (nodeItem.getNodeName().equals("text")) {
+                        colorString = nodeItem.getAttributes().getNamedItem("color").getNodeValue();
                         retsb.append(nodeItem.getTextContent());
                     } else if (nodeItem.getNodeName().equals("encrypted")) {
 
@@ -42,6 +49,9 @@ public class XmlParser {
                     //dekryptera
                 }
 
+                return new String[]{retsb.toString(), name, colorString};
+
+
             }
         } catch (ParserConfigurationException e) {
             return handleFaults();   // TODO: output "Trasigt meddelande!"
@@ -50,7 +60,7 @@ public class XmlParser {
         } catch (IOException e) {
             return handleFaults();
         }
-        return new String[]{retsb.toString()};
+        return handleFaults();
     }
 
     public static String parseRequest(String xmlString) {

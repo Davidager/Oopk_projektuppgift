@@ -55,9 +55,8 @@ public class ServerChatThread extends ChatThread implements Runnable {
                     System.out.println("Server disconnect");
                     done = true;
                 }else {
-                    //ta hand om xml-strängen och sedan lägga in texten med korrekt namn och färg i chatText
-                    //XmlParser.parse(s) returnerar lista med 0. text 1. namn 2. färg 3. indikator
-                    serverChatFrame.writeToChat(s, "sdf", Color.RED);
+                    String[] parsedArray = XmlParser.parse(s);
+                    serverChatFrame.writeToChat(parsedArray[0], parsedArray[1], Color.decode(parsedArray[2]));
                 }
             }catch (IOException e){
 

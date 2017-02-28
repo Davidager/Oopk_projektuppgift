@@ -225,7 +225,11 @@ public class ChatFrame extends JFrame implements ActionListener{
         //System.out.println(textMessage);
 
         writeToChat(textMessage, myName, myColor);
-        textMessage = "<message><text>" + textMessage + "</text></message>";
+
+        String hexaColor = String.format("#%02X%02X%02X", myColor.getRed(),
+                myColor.getGreen(), myColor.getBlue());
+        textMessage = "<message sender=\"" + myName + "\"><text color=\""
+                + hexaColor + "\">" + textMessage + "</text></message>";
         myText.setText("");
         return textMessage;
     }
