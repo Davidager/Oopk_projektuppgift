@@ -1,11 +1,11 @@
+import oracle.jrockit.jfr.JFR;
+
 import javax.swing.*;
 import javax.swing.event.CaretEvent;
 import javax.swing.event.CaretListener;
 import javax.swing.text.*;
 import java.awt.*;
-import java.awt.event.ActionEvent;
-import java.awt.event.ActionListener;
-import java.awt.event.KeyEvent;
+import java.awt.event.*;
 
 /**
  * Created by Dexter on 2017-02-22.
@@ -20,6 +20,7 @@ public class ChatFrame extends JFrame implements ActionListener{
     private ChatThread chatThread;
     private Color myColor;
     private String myName;
+    public int hej;
 
     public ChatFrame(ChatThread chatThread, String myName, Color myColor){
         this(myName, myColor);
@@ -32,7 +33,7 @@ public class ChatFrame extends JFrame implements ActionListener{
     public ChatFrame(String myName, Color myColor) {
         this.myName = myName;
         this.myColor = myColor;
-
+        this.setTitle("ChatFrame");
         windowPanel = new JPanel();
         windowPanel.setLayout(new BoxLayout(windowPanel, BoxLayout.PAGE_AXIS));
 
@@ -85,7 +86,25 @@ public class ChatFrame extends JFrame implements ActionListener{
 
         add(windowPanel);
         pack();
-        setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);  //måste nog tas bort
+
+        WindowListener exitListener = new WindowAdapter() {
+            @Override
+            public void windowClosing(WindowEvent e) {
+                String[] options = {"Ja", "Nej"};
+                int confirm = JOptionPane.showOptionDialog(
+                        null, "Vill du stänga den här chatten?",
+                        "OBS!", 0,
+                        JOptionPane.INFORMATION_MESSAGE, null, options, options[0]);
+                if (confirm == 0) {
+                    //chatThread.closeThread();
+                    setVisible(false);
+                    dispose();
+                }
+            }
+        };
+        this.addWindowListener(exitListener);
+
+        setDefaultCloseOperation(JFrame.DO_NOTHING_ON_CLOSE);
         myText.grabFocus();
         setVisible(true);
 
@@ -156,7 +175,9 @@ public class ChatFrame extends JFrame implements ActionListener{
     }
 
     protected void disconnect() {
-        chatThread.closeThread();
+        //chatThread.closeThread();
+        setVisible(false);
+        dispose();
     }
 
     // Gör så att man kan skicka med enter, och skapa ny rad med shift + enter
@@ -186,34 +207,44 @@ public class ChatFrame extends JFrame implements ActionListener{
         return myText;
     }
 
-    private void submitText() {
+    protected void submitText() {
+        String textMessage = submitHelper();
+        if (textMessage.isEmpty()) return;
+        chatThread.sendText(textMessage);
 
+
+    }
+
+    protected String submitHelper() {
         String textMessage = myText.getText();
-        if (textMessage.isEmpty()) return;   // inte skicka något om inget är inskrivet
+        if (textMessage.isEmpty()) return "";   // inte skicka något om inget är inskrivet
         //StringBuilder stringBuilder = new StringBuilder(textMessage);
 
         // lägg till krypto-taggar
 
-        System.out.println(textMessage);
+        //System.out.println(textMessage);
 
         writeToChat(textMessage, myName, myColor);
-        textMessage = "<message>" + textMessage + "</message>";
-        //sendToOthers(textMessage);
-
+        textMessage = "<message><text>" + textMessage + "</text></message>";
         myText.setText("");
+        return textMessage;
     }
 
     public void writeToChat(String text, String name, Color color) {
         StyledDocument chatDoc = chatText.getStyledDocument();
 
         SimpleAttributeSet keyWord = new SimpleAttributeSet();
-        StyleConstants.setForeground(keyWord, Color.RED);
+        StyleConstants.setForeground(keyWord, color);
 
         try {
             chatDoc.insertString(chatDoc.getLength(), name + ": " + text + "\n", keyWord);
         } catch (Exception e) {
             System.out.println(e);
         }
+    }
+
+    public void setChatThread(ChatThread chatThread) {
+        this.chatThread = chatThread;
     }
 
     public static void main(String[] args) {

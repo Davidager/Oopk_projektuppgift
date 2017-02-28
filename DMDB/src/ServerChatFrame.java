@@ -6,15 +6,33 @@ import java.awt.*;
  */
 public class ServerChatFrame extends ChatFrame{
     private ServerChatThread serverChatThread;
+    private int serverNumber;
 
-    public ServerChatFrame(ServerChatThread serverChatThread, String myName, Color myColor) {
+    public ServerChatFrame( String myName, Color myColor) {
         super(myName, myColor);
-        this.serverChatThread = serverChatThread;
+        serverNumber = MainFrame.atomicInteger.get();
+        this.setTitle("Server chat " + serverNumber);
+        //this.serverChatThread = serverChatThread;
 
     }
 
     @Override
-    public void disconnect() {
+    protected void disconnect() {
 
+    }
+
+    public int getServerNumber() {
+        return serverNumber;
+    }
+
+    @Override
+    protected void submitText() {
+        String textMessage = submitHelper();
+        if (textMessage.isEmpty()) return;
+        serverChatThread.sendText(textMessage);
+    }
+
+    public void setServerChatThread(ServerChatThread serverChatThread) {
+        this.serverChatThread = serverChatThread;
     }
 }

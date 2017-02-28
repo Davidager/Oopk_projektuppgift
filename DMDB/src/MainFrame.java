@@ -8,6 +8,7 @@ import java.net.InetAddress;
 import java.io.*;
 import java.net.Socket;
 import java.net.UnknownHostException;
+import java.util.concurrent.atomic.AtomicInteger;
 
 /**
  * Created by Dexter on 2017-02-08.
@@ -20,8 +21,8 @@ public class MainFrame extends JFrame implements ActionListener {
     private ChatThread chatThread;
     private int serverPortNumber, hostPortNumber;
     private InetAddress hostIP;
-    private String name, textColor;
-    private Socket socket;
+    public static AtomicInteger atomicInteger = new AtomicInteger();
+
 
     public MainFrame(){
         //kasta in alla visuella grejer i mainframe här
@@ -38,7 +39,8 @@ public class MainFrame extends JFrame implements ActionListener {
         okClientButton = new JButton("Bekräfta klient");
         okServerButton = new JButton("Bekräfta server");
 
-        String[] items = {"Blå", "Röd", "Gul"};
+        String[] items = {"Blå", "Röd", "Svart", "Grön"};
+        //Color[] items = {Color.BLUE, Color.RED, Color.BLACK, Color.GREEN};
         colorSelector = new JComboBox(items);
 
         add(label1);
@@ -53,55 +55,78 @@ public class MainFrame extends JFrame implements ActionListener {
         add(okClientButton);
 
         okServerButton.addActionListener(this);
-        //okClientButton.addActionListener(this);
+        okClientButton.addActionListener(this);
 
         pack();
         setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
         setVisible(true);
     }
 
-    public void okServerButtonPressed(){
+    public void okServerButtonPressed(String name, Color textColor){
         listeningThread = new ListeningThread(serverPortNumber, name, textColor);
     }
 
-    public void okClientButtonPressed(){
+    public void okClientButtonPressed(String name, Color textColor){
         try{
-            socket = new Socket(hostIP, hostPortNumber);
+            Socket socket = new Socket(hostIP, hostPortNumber);
+            requestConnection(socket, name);
+            chatThread = new ChatThread(socket, name, textColor);
+            chatThread.start();
         } catch (IOException f){
-            System.out.println("boom");
+            System.out.println("Något är fel med input :)");   //lägga till någon popup
         }
 
-        chatThread = new ChatThread(socket, name, textColor);
+
+    }
+
+    private void requestConnection(Socket socket, String name) {
+        String requestString = "<request>" + name + " vill skapa ett chattsamtal!</request>";
+        try{
+            new PrintWriter(socket.getOutputStream(), true).println(requestString);
+        } catch (IOException e) {
+            System.out.println("ojdå");
+        }
     }
 
     public void actionPerformed(ActionEvent e){
-        if (e.getSource() == okClientButton);{
-            name = nameInputField.getText();
-            textColor = (String)colorSelector.getSelectedItem();
+        if (e.getSource() == okClientButton) {
+            String name = nameInputField.getText();
+            Color textColor = getColor();
             if (name.length() != 0 && textClientPort.getText().length() != 0 && textClientIP.getText().length() !=0){
                 hostPortNumber = Integer.parseInt(textClientPort.getText());
+                System.out.println("hej");
                 try{
                     hostIP = InetAddress.getByName(textClientIP.getText());
                 }catch(UnknownHostException e1){
                     System.out.println("IP failed: " + hostIP);
                     System.exit(-1);
                 }
-                okClientButtonPressed();
+                okClientButtonPressed(name, textColor);
             }
         }
-        if (e.getSource() == okServerButton);{
-            name = nameInputField.getText();
-            textColor = (String)colorSelector.getSelectedItem();
+        if (e.getSource() == okServerButton) {
+            String name = nameInputField.getText();
+            Color textColor = getColor();
             if (name.length() != 0 && textInpServer.getText().length() != 0){
                 serverPortNumber = Integer.parseInt(textInpServer.getText());
-                okServerButtonPressed();
+                okServerButtonPressed(name, textColor);
             }
             //lägga till ett felmeddelande som else här
         }
+    }
+
+    private Color getColor() {
+        String colorString = (String)colorSelector.getSelectedItem();
+        if (colorString.equals("Blå")) return Color.BLUE;
+        if (colorString.equals("Röd")) return Color.RED;
+        if (colorString.equals("Grön")) return Color.GREEN;
+        if (colorString.equals("Svart")) return Color.BLACK;
+        return Color.BLACK;
     }
 
     public static void main(String[] args) {
         new MainFrame();
 
     }
+
 }

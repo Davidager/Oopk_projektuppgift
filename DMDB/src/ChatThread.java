@@ -10,22 +10,23 @@ import java.util.ArrayList;
  */
 public class ChatThread extends Thread implements Runnable{
     private int hostPortNumber;
-    private String name,textColor;
+    protected String name;
+    protected Color textColor;
     private InetAddress hostIP;
     private Socket socket;
     private ChatFrame chatFrame;
-    private BufferedReader inText;
-    private PrintWriter outText;
+    protected BufferedReader inText;
+    protected PrintWriter outText;
     private InputStream inFile;
     private OutputStream outFile;
     private Thread receivingThread;
-    private Boolean done;
+    protected Boolean done;
 
-    public ChatThread(Socket socket, String name, String textColor){
+    public ChatThread(Socket socket, String name, Color textColor){
         this.socket = socket;
         this.name = name;
         this.textColor = textColor;
-
+        System.out.println(socket);
 
         try{
             outText = new PrintWriter(socket.getOutputStream(), true);
@@ -33,20 +34,24 @@ public class ChatThread extends Thread implements Runnable{
         }catch (UnknownHostException e){
             System.out.println("bam");
         }catch (IOException f){
-            System.out.println("boom");
+            System.out.println("b88oom");
         }
 
-        chatFrame = new ChatFrame("sdf", Color.RED);
-        receivingThread = new Thread(this);
-        receivingThread.start();
+        chatFrame = new ChatFrame(name, textColor);
+
+    }
+
+    public ChatThread() {
 
     }
 
     public void run(){
+        chatFrame.setChatThread(this);
         done = false;
         while(!done){
             try{
                 String s = inText.readLine();
+                System.out.println(s);
                 if (s==null){
                     System.out.println("Server disconnect");
                     done = true;
@@ -61,6 +66,10 @@ public class ChatThread extends Thread implements Runnable{
         }
     }
 
+    protected void runMethod() {
+
+    }
+
     public void closeThread(){
         done = true;    //hur funkar detta med reveivingthread?
         receivingThread.stop();  //hur göra?
@@ -68,7 +77,7 @@ public class ChatThread extends Thread implements Runnable{
     }
 
     public void sendText(String str){
-        outText.print(str);
+        outText.println(str);
     }
 
     public void receiveText(String str){
