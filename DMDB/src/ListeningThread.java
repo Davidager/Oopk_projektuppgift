@@ -111,7 +111,9 @@ public class ListeningThread extends Thread implements Runnable {
         } catch (NullPointerException e) {
             try {
                 if (infoText.equals("En enklare klient vill ansluta.")) {
-                    new PrintWriter(clientSocket.getOutputStream(), true).println("Nej tack!");
+                    String hexaColor = String.format("#%02X%02X%02X", textColor.getRed(),
+                            textColor.getGreen(), textColor.getBlue());
+                    new PrintWriter(clientSocket.getOutputStream(), true).println("<message sender=\""+name+"\"><text color=\"" + hexaColor + "\">Nej tack!</text></message>");
                 } else {
                     new PrintWriter(clientSocket.getOutputStream(), true).println("<request reply=no>Nej tack!</request>");
                 }

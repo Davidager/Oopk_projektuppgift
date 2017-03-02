@@ -227,22 +227,15 @@ public class ChatFrame extends JFrame implements ActionListener{
     protected String submitHelper() {
         String textMessage = myText.getText();
         if (textMessage.isEmpty()) return "";   // inte skicka något om inget är inskrivet
-        //StringBuilder stringBuilder = new StringBuilder(textMessage);
-
-        // lägg till krypto-taggar
-
-        //System.out.println(textMessage);
 
         writeToChat(textMessage, myName, myColor);
-        textMessage = textMessage.replaceAll("<", "&lt;");
-        textMessage = textMessage.replaceAll(">", "&gt;");
 
-        String hexaColor = String.format("#%02X%02X%02X", myColor.getRed(),
-                myColor.getGreen(), myColor.getBlue());
-        textMessage = "<message sender=\"" + myName + "\"><text color=\""
-                + hexaColor + "\">" + textMessage + "</text></message>";
+        String retString = formatAndEncode(textMessage);
+        /*textMessage = "<message sender=\"" + myName + "\"><text color=\""
+                + hexaColor + "\">" + textMessage + "</text></message>";*/
+
         myText.setText("");
-        return textMessage;
+        return retString;
     }
 
     public void writeToChat(String text, String name, Color color) {
@@ -271,6 +264,138 @@ public class ChatFrame extends JFrame implements ActionListener{
         public int getMark() {
             return getDot();
         }
+    }
+
+    private String formatAndEncode(String textMessage) {
+        textMessage = textMessage.replaceAll("<", "&lt;");
+        textMessage = textMessage.replaceAll(">", "&gt;");
+
+        String hexaColor = String.format("#%02X%02X%02X", myColor.getRed(),
+                myColor.getGreen(), myColor.getBlue());
+
+        StringBuilder sb = new StringBuilder();
+        sb.append("<message sender=\"");
+        sb.append(myName);
+        sb.append("\">");
+
+        String stateString = "";
+        AttributeSet attributeSet;
+        int counter = 0;
+        for (int i = 0; i < textMessage.length(); i++) {
+            attributeSet = myText.getStyledDocument().getCharacterElement(i).getAttributes();
+            if (stateString.equals("AES")) {
+                if (attributeSet.containsAttribute(StyleConstants.Bold, true)) {
+                    counter++;
+                } else {
+                    if (attributeSet.containsAttribute(StyleConstants.Italic, true)){
+                        stateString = "caesar";
+                    } else {
+                        stateString = "";
+                    }
+                    sb.append("<encrypted type=\"AES\" key=\"");
+                    StringBuilder encodedPart = new StringBuilder();
+                    encodedPart.append("<text color=\"");
+                    encodedPart.append(hexaColor);
+                    encodedPart.append("\">");
+                    encodedPart.append(textMessage.substring(i-counter, i));
+                    encodedPart.append("</text>");
+                    String[] encArray = EncryptionClass.encryptAES(encodedPart.toString());
+
+                    sb.append(encArray[0]);
+                    sb.append("\">");
+                    sb.append(encArray[1]);
+                    sb.append("</encrypted>");
+                    counter = 1;
+                }
+            } else if (stateString.equals("caesar")) {
+                if (attributeSet.containsAttribute(StyleConstants.Italic, true)) {
+                    counter++;
+                } else {
+                    if (attributeSet.containsAttribute(StyleConstants.Bold, true)){
+                        stateString = "AES";
+                    } else {
+                        stateString = "";
+                    }
+                    sb.append("<encrypted type=\"caesar\" key=\"");
+                    StringBuilder encodedPart = new StringBuilder();
+                    encodedPart.append("<text color=\"");
+                    encodedPart.append(hexaColor);
+                    encodedPart.append("\">");
+                    encodedPart.append(textMessage.substring(i-counter, i));
+                    encodedPart.append("</text>");
+                    //String[] encArray = EncryptionClass.encryptCaesar(encodedPart.toString());
+
+                    //sb.append(encArray[0]);
+                    sb.append("\">");
+                    //sb.append(encArray[1]);
+                    sb.append("</encrypted>");
+                    counter = 1;
+                }
+            } else {
+
+                if (attributeSet.containsAttribute(StyleConstants.Bold, true)) {
+                    if (i != 0) {      // är vi på första så ska vi inte lägga in
+                        stateString = "AES";
+                        sb.append("<text color=\"");
+                        sb.append(hexaColor);
+                        sb.append("\">");
+                        sb.append(textMessage.substring(i - counter, i));
+                        sb.append("</text>");
+                    }
+                    counter = 1;
+                } else if (attributeSet.containsAttribute(StyleConstants.Italic, true)) {
+                    if (i != 0) {
+                        stateString = "Caesar";
+                        sb.append("<text color=\"");
+                        sb.append(hexaColor);
+                        sb.append("\">");
+                        sb.append(textMessage.substring(i-counter, i));
+                        sb.append("</text>");
+                    }
+                    counter = 1;
+                } else {
+                    counter++;
+                }
+            }
+        }
+        if (stateString.equals("AES")) {
+            sb.append("<encrypted type=\"AES\" key=\"");
+            StringBuilder encodedPart = new StringBuilder();
+            encodedPart.append("<text color=\"");
+            encodedPart.append(hexaColor);
+            encodedPart.append("\">");
+            encodedPart.append(textMessage.substring(textMessage.length()-counter, textMessage.length()));
+            encodedPart.append("</text>");
+            String[] encArray = EncryptionClass.encryptAES(encodedPart.toString());
+
+            sb.append(encArray[0]);
+            sb.append("\">");
+            sb.append(encArray[1]);
+            sb.append("</encrypted>");
+        } else if (stateString.equals("Caesar")) {
+            sb.append("<encrypted type=\"caesar\" key=\"");
+            StringBuilder encodedPart = new StringBuilder();
+            encodedPart.append("<text color=\"");
+            encodedPart.append(hexaColor);
+            encodedPart.append("\">");
+            encodedPart.append(textMessage.substring(textMessage.length()-counter, textMessage.length()));
+            encodedPart.append("</text>");
+            //String[] encArray = EncryptionClass.encryptCaesar(encodedPart.toString());
+
+            //sb.append(encArray[0]);
+            sb.append("\">");
+            //sb.append(encArray[1]);
+            sb.append("</encrypted>");
+        } else {
+            sb.append("<text color=\"");
+            sb.append(hexaColor);
+            sb.append("\">");
+            sb.append(textMessage.substring(textMessage.length()-counter, textMessage.length()));
+            sb.append("</text>");
+        }
+        sb.append( "</message>");
+
+        return sb.toString();
     }
 
 

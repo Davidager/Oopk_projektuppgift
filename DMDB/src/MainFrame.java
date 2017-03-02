@@ -69,7 +69,7 @@ public class MainFrame extends JFrame implements ActionListener {
     public void okClientButtonPressed(String name, Color textColor){
         try{
             Socket socket = new Socket(hostIP, hostPortNumber);
-            //requestConnection(socket, name);
+            requestConnection(socket, name);
             chatThread = new ChatThread(socket, name, textColor);
             chatThread.start();
         } catch (IOException f){

@@ -14,7 +14,7 @@ public class ChatThread extends Thread implements Runnable{
     protected Color textColor;
     private InetAddress hostIP;
     private Socket socket;
-    private ChatFrame chatFrame;
+    private ChatFrame chatFrame;       // TODO: fixa så de inte stänger av direkt utan visar "putte har loggat ut".
     protected BufferedReader inText;
     protected PrintWriter outText;
     private InputStream inFile;
