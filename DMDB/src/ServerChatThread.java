@@ -41,7 +41,7 @@ public class ServerChatThread extends ChatThread implements Runnable {
         serverChatFrame = new ServerChatFrame(name, textColor);
 
 
-    }
+    }     // TODO: fixa så att serverchatthread kan skapas flera gånger till samma serverchatframe, eller ska serverchatthread skapa flera trådar självt?
 
     @Override
     public void run() {
@@ -62,6 +62,10 @@ public class ServerChatThread extends ChatThread implements Runnable {
 
             }
         }
+    }
+
+    public void createInputListenerThread() {
+        //ny socket med mera
     }
 
     public String toString(){

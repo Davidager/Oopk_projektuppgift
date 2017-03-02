@@ -28,7 +28,7 @@ public class ListeningThread extends Thread implements Runnable {
         try {
             serverSocket = new ServerSocket(portNumber, 0, InetAddress.getByName(null));
         } catch (IOException e) {
-            System.out.println("Could not listen on port: " + portNumber);
+            System.out.println("Could not listen to port: " + portNumber);
         }
 
         System.out.println("congrats man!");
@@ -61,13 +61,13 @@ public class ListeningThread extends Thread implements Runnable {
         Object[] possibilities = new Object[1 + threadList.size()];
         possibilities[0] = newChat;
         for (int i=1; i<threadList.size() + 1; i++){
-            System.out.println(threadList.get(i-1));
+            //System.out.println(threadList.get(i-1));
             possibilities[i] = threadList.get(i-1);
         }
 
 
         String requestString = null;
-        try {
+        try {   // TODO: försök bara under en kortare tid, annars ge upp och låt vara null
             requestString = new BufferedReader(
                     new InputStreamReader(clientSocket.getInputStream())).readLine();
         } catch (IOException e) {
@@ -82,17 +82,17 @@ public class ListeningThread extends Thread implements Runnable {
             }
         }
 
-        System.out.println(possibilities[possibilities.length-1] + "12");
+        //System.out.println(possibilities[possibilities.length-1] + "12");
 
         Object obj = JOptionPane.showInputDialog(
                 frame, infoText + "\nVill du ansluta?", "Chattförfrågan",
                 JOptionPane.PLAIN_MESSAGE, null, possibilities, possibilities[0]);
         //System.out.println(s);
-        System.out.println(obj);
+        //System.out.println(obj);
         if (obj.equals(newChat)){
-            MainFrame.atomicInteger.incrementAndGet();
+            MainFrame.atomicInteger.incrementAndGet();  // Counter för att hålla koll på hur många samtal som har skapats
             threadList.add(createNewThread(clientSocket, name, textColor));
-            System.out.println(threadList.get(0));
+            //System.out.println(threadList.get(0));
         }else {
             ServerChatThread serverChatThread = (ServerChatThread)obj;
             addToThread(serverChatThread, clientSocket);
@@ -100,7 +100,7 @@ public class ListeningThread extends Thread implements Runnable {
     }
     public void addToThread(ServerChatThread serverChatThread, Socket clientSocket){
         serverChatThread.addToSocketList(clientSocket); // Vi lägger till den nya socketen till tråden
-    }
+}
     public ServerChatThread createNewThread(Socket clientSocket, String name, Color textColor){
         ServerChatThread svc = new ServerChatThread(clientSocket, name, textColor);
 
