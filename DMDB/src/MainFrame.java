@@ -69,7 +69,7 @@ public class MainFrame extends JFrame implements ActionListener {
     public void okClientButtonPressed(String name, Color textColor){
         try{
             Socket socket = new Socket(hostIP, hostPortNumber);
-            requestConnection(socket, name);
+            //requestConnection(socket, name);
             chatThread = new ChatThread(socket, name, textColor);
             chatThread.start();
         } catch (IOException f){
@@ -94,7 +94,6 @@ public class MainFrame extends JFrame implements ActionListener {
             Color textColor = getColor();
             if (name.length() != 0 && textClientPort.getText().length() != 0 && textClientIP.getText().length() !=0){
                 hostPortNumber = Integer.parseInt(textClientPort.getText());
-                System.out.println("hej");
                 try{
                     hostIP = InetAddress.getByName(textClientIP.getText());
                 }catch(UnknownHostException e1){

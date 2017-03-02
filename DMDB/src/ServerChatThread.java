@@ -3,8 +3,6 @@ import java.io.BufferedReader;
 import java.io.IOException;
 import java.io.InputStreamReader;
 import java.io.PrintWriter;
-import java.net.InetAddress;
-import java.net.ServerSocket;
 import java.net.Socket;
 import java.net.UnknownHostException;
 import java.util.ArrayList;
@@ -17,14 +15,17 @@ public class ServerChatThread extends ChatThread implements Runnable {
     private ArrayList<String> nameList;
     private Socket socket;
     private ServerChatFrame serverChatFrame;
+    private ArrayList<ServerChatThread> threadList;
 
     private Hashtable<Socket, PrintWriter> socketPrintWriterHashtable;
-    private Hashtable<Socket, String> socketStringHashTable;
+    private Hashtable<Socket, String> socketandNameHashTable;
 
-    public ServerChatThread(Socket socket, String name, Color textColor){
-        this.socket = socket;
+    public ServerChatThread(Socket socket, String name, Color textColor, ArrayList<ServerChatThread> threadList){
+        this.socket = socket;   // Todo: används detta?
         this.name = name;
         this.textColor = textColor;
+        this.threadList = threadList;
+
 
         nameList = new ArrayList<>();
 
@@ -38,17 +39,14 @@ public class ServerChatThread extends ChatThread implements Runnable {
         }*/
 
         socketPrintWriterHashtable = new Hashtable<>();
-        socketStringHashTable = new Hashtable<>();
+        socketandNameHashTable = new Hashtable<>();
 
         //socketPrintWriterHashtable.put(socket, outText);
-        System.out.println("yo what up");
         serverChatFrame = new ServerChatFrame(name, textColor);
-
-
-    }     // TODO: fixa så att serverchatthread kan skapas flera gånger till samma serverchatframe, eller ska serverchatthread skapa flera trådar självt?
+    }
 
     @Override
-    public void run() {
+    public void run() {    // TODO: ska nog tas bort på något sätt, körs aldrig som det är nu
         done = false;
         while(!done){
             try{
@@ -67,6 +65,19 @@ public class ServerChatThread extends ChatThread implements Runnable {
         }
     }
 
+    public int getNumberConnected () {
+        return socketPrintWriterHashtable.size();
+    }
+
+    public Hashtable<Socket, PrintWriter> getSocketPrintWriterHashtable() {
+        return socketPrintWriterHashtable;
+    }
+
+    public Hashtable<Socket, String> getSocketandNameHashtable() {
+        return socketandNameHashTable;
+    }
+
+
     public void createInputListenerThread() {
         //ny socket med mera
     }
@@ -77,19 +88,31 @@ public class ServerChatThread extends ChatThread implements Runnable {
 
     public String toString(){
         String retString = "Samtal nr " + serverChatFrame.getServerNumber();
-        /*for (int i=0 ; i<nameList.size()-1 ; i++){
-            retString = retString + nameList.get(i) + ", ";
-        }
-        retString = retString + nameList.get(nameList.size()-1);*/
         return retString;
     }
 
-    public void disconnect(Socket socket){
-        /*for (int i=0;i<socketList.size();i++){
-            if (socket==socketList.get(i)){
-                socketList.remove(i);
+    public void removeSocket(Socket removeSocket){
+        socketPrintWriterHashtable.remove(removeSocket);
+        if (socketandNameHashTable.containsKey(removeSocket)) {
+            socketandNameHashTable.remove(removeSocket);
+        }
+    }
+
+    private void removeFromThreadList() {
+        threadList.remove(this);
+    }
+
+    @Override
+    public void closeThread() {
+        try{
+            removeFromThreadList();
+            for (Socket key : socketPrintWriterHashtable.keySet()) {
+                key.close();
             }
-        }*/
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
+
     }
 
     @Override
@@ -132,6 +155,11 @@ public class ServerChatThread extends ChatThread implements Runnable {
                     System.out.println(s);
                     if (s==null){
                         System.out.println("Server disconnect in receivThread");
+                        removeSocket(threadSocket);
+                        if (socketPrintWriterHashtable.isEmpty()) {
+                            serverChatFrame.frameClose();
+                            removeFromThreadList();
+                        }
                         done = true;
                     }else {
                         for (Socket key : socketPrintWriterHashtable.keySet()) {
@@ -140,6 +168,9 @@ public class ServerChatThread extends ChatThread implements Runnable {
                             }
                         }
                         String[] parsedArray = XmlParser.parse(s);
+                        if (!socketandNameHashTable.containsKey(threadSocket)) {   // lägger in namn!
+                            socketandNameHashTable.put(threadSocket, parsedArray[1]);
+                        }
                         serverChatFrame.writeToChat(parsedArray[0], parsedArray[1], Color.decode(parsedArray[2]));
                     }
                 }catch (IOException e){

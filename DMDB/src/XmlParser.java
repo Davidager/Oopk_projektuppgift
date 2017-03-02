@@ -18,15 +18,14 @@ import java.io.StringReader;
  */
 public class XmlParser {
     public static String[] parse(String xmlString) {
-        StringBuilder retsb = new StringBuilder();
+        StringBuilder retsb = new StringBuilder();  //TODO: hantera < och såklart &gt; som Andreas sade
         try {
             DocumentBuilder db = DocumentBuilderFactory.newInstance().newDocumentBuilder();
             Document doc = db.parse(new InputSource(new StringReader(xmlString)));
             Node rootNode = doc.getDocumentElement();
             if (rootNode.getNodeName().equals("message")) {
-                String name = "";
-                name = rootNode.getAttributes().getNamedItem("sender").getNodeValue();
-                String colorString = "";
+                String name = rootNode.getAttributes().getNamedItem("sender").getNodeValue();
+                String colorString = "#000000";   //standardfärg svart
                 NodeList nodeList = rootNode.getChildNodes();
                 Node nodeItem;
                 for (int i = 0; i < nodeList.getLength(); i++) {
@@ -94,6 +93,6 @@ public class XmlParser {
     }
 
     private static String[] handleFaults(){
-        return new String[]{"Nu kom det ett trasigt meddelande!"};
+        return new String[]{"Nu kom det ett trasigt meddelande!", "System", "#7c7777"};
     }
 }

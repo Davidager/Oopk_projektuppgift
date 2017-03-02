@@ -54,6 +54,7 @@ public class ChatThread extends Thread implements Runnable{
                 System.out.println(s);
                 if (s==null){
                     System.out.println("Server disconnect");
+                    chatFrame.frameClose();
                     done = true;
                 }else {
                     String[] parsedArray = XmlParser.parse(s);
@@ -70,8 +71,15 @@ public class ChatThread extends Thread implements Runnable{
     }
 
     public void closeThread(){
-        done = true;    //hur funkar detta med reveivingthread?
-        receivingThread.stop();  //hur göra?
+        try {
+            socket.close();
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
+
+
+        /*done = true;    //hur funkar detta med reveivingthread?
+        receivingThread.stop();  //hur göra?*/
 
     }
 

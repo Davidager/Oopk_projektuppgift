@@ -96,9 +96,10 @@ public class ChatFrame extends JFrame implements ActionListener{
                         "OBS!", 0,
                         JOptionPane.INFORMATION_MESSAGE, null, options, options[0]);
                 if (confirm == 0) {
-                    //chatThread.closeThread();
-                    setVisible(false);
-                    dispose();
+                    closeThread();
+                    frameClose();
+
+
                 }
             }
         };
@@ -108,6 +109,10 @@ public class ChatFrame extends JFrame implements ActionListener{
         myText.grabFocus();
         setVisible(true);
 
+    }
+
+    protected void closeThread() {
+        chatThread.closeThread();
     }
 
     public void actionPerformed(ActionEvent e) {
@@ -175,7 +180,11 @@ public class ChatFrame extends JFrame implements ActionListener{
     }
 
     protected void disconnect() {
-        //chatThread.closeThread();
+        closeThread();
+        frameClose();
+    }
+
+    protected void frameClose() {
         setVisible(false);
         dispose();
     }
@@ -225,6 +234,8 @@ public class ChatFrame extends JFrame implements ActionListener{
         //System.out.println(textMessage);
 
         writeToChat(textMessage, myName, myColor);
+        textMessage = textMessage.replaceAll("<", "&lt;");
+        textMessage = textMessage.replaceAll(">", "&gt;");
 
         String hexaColor = String.format("#%02X%02X%02X", myColor.getRed(),
                 myColor.getGreen(), myColor.getBlue());
