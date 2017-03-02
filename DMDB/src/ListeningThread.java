@@ -89,7 +89,10 @@ public class ListeningThread extends Thread implements Runnable {
                 JOptionPane.PLAIN_MESSAGE, null, possibilities, possibilities[0]);
         //System.out.println(s);
         //System.out.println(obj);
+        System.out.println(obj);
+        System.out.println(newChat);
         if (obj.equals(newChat)){
+            System.out.println("what s this");
             MainFrame.atomicInteger.incrementAndGet();  // Counter för att hålla koll på hur många samtal som har skapats
             threadList.add(createNewThread(clientSocket, name, textColor));
             //System.out.println(threadList.get(0));
@@ -103,8 +106,9 @@ public class ListeningThread extends Thread implements Runnable {
 }
     public ServerChatThread createNewThread(Socket clientSocket, String name, Color textColor){
         ServerChatThread svc = new ServerChatThread(clientSocket, name, textColor);
-
-        svc.start();
+        svc.setServerChatFramesServerChatThread();
+        svc.addToSocketList(clientSocket);
+        //svc.start();
         return svc;
     }
 }
