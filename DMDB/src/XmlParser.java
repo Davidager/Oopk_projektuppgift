@@ -36,7 +36,7 @@ public class XmlParser {
                         colorString = nodeItem.getAttributes().getNamedItem("color").getNodeValue();
                         retsb.append(nodeItem.getTextContent());
                     } else if (nodeItem.getNodeName().equals("encrypted")) {
-
+                        
                     }
                 }
                 //retString = innerXml(doc.getDocumentElement());

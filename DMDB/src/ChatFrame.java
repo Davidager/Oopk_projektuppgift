@@ -280,6 +280,10 @@ public class ChatFrame extends JFrame implements ActionListener{
 
         String stateString = "";
         AttributeSet attributeSet;
+        attributeSet = myText.getStyledDocument().getCharacterElement(0).getAttributes();
+        if (attributeSet.containsAttribute(StyleConstants.Bold, true)) stateString = "AES";
+        if (attributeSet.containsAttribute(StyleConstants.Italic, true)) stateString = "caesar";
+
         int counter = 0;
         for (int i = 0; i < textMessage.length(); i++) {
             attributeSet = myText.getStyledDocument().getCharacterElement(i).getAttributes();
@@ -323,11 +327,11 @@ public class ChatFrame extends JFrame implements ActionListener{
                     encodedPart.append("\">");
                     encodedPart.append(textMessage.substring(i-counter, i));
                     encodedPart.append("</text>");
-                    //String[] encArray = EncryptionClass.encryptCaesar(encodedPart.toString());
+                    String[] encArray = EncryptionClass.encryptCaesar(encodedPart.toString());
 
-                    //sb.append(encArray[0]);
+                    sb.append(encArray[0]);
                     sb.append("\">");
-                    //sb.append(encArray[1]);
+                    sb.append(encArray[1]);
                     sb.append("</encrypted>");
                     counter = 1;
                 }
@@ -345,7 +349,7 @@ public class ChatFrame extends JFrame implements ActionListener{
                     counter = 1;
                 } else if (attributeSet.containsAttribute(StyleConstants.Italic, true)) {
                     if (i != 0) {
-                        stateString = "Caesar";
+                        stateString = "caesar";
                         sb.append("<text color=\"");
                         sb.append(hexaColor);
                         sb.append("\">");
@@ -372,7 +376,7 @@ public class ChatFrame extends JFrame implements ActionListener{
             sb.append("\">");
             sb.append(encArray[1]);
             sb.append("</encrypted>");
-        } else if (stateString.equals("Caesar")) {
+        } else if (stateString.equals("caesar")) {
             sb.append("<encrypted type=\"caesar\" key=\"");
             StringBuilder encodedPart = new StringBuilder();
             encodedPart.append("<text color=\"");
@@ -380,11 +384,11 @@ public class ChatFrame extends JFrame implements ActionListener{
             encodedPart.append("\">");
             encodedPart.append(textMessage.substring(textMessage.length()-counter, textMessage.length()));
             encodedPart.append("</text>");
-            //String[] encArray = EncryptionClass.encryptCaesar(encodedPart.toString());
+            String[] encArray = EncryptionClass.encryptCaesar(encodedPart.toString());
 
-            //sb.append(encArray[0]);
+            sb.append(encArray[0]);
             sb.append("\">");
-            //sb.append(encArray[1]);
+            sb.append(encArray[1]);
             sb.append("</encrypted>");
         } else {
             sb.append("<text color=\"");
