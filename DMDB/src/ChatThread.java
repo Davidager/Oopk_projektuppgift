@@ -58,6 +58,9 @@ public class ChatThread extends Thread implements Runnable{
                     done = true;
                 }else {
                     String[] parsedArray = XmlParser.parse(s);
+                    if (parsedArray[2].equals("request")) {
+                        // TODO: sendtext blabla  fixa även för serverchatthread!
+                    }
                     chatFrame.writeToChat(parsedArray[0], parsedArray[1], Color.decode(parsedArray[2]));
                 }
             }catch (IOException e){

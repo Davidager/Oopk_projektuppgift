@@ -32,6 +32,7 @@ public class XmlParser {
                 for (int i = 0; i < nodeList.getLength(); i++) {
                     nodeItem = nodeList.item(i);
                     Object[] retArray = partParse(nodeItem, retsb);
+                    if (retArray[1].equals("keyrequest")) return new String[]{"", "", "request"};
                     retsb =(StringBuilder)retArray[0];
                     colorString = (String)retArray[1];
 
@@ -54,7 +55,7 @@ public class XmlParser {
             return handleFaults();   // TODO: output "Trasigt meddelande!"
         } catch (SAXException e) {
             return handleFaults();
-        } catch (IOException e) {
+        } catch (IOException e) {  // TODO: man kan fortfarande få bold och italic samtidigt
             return handleFaults();
         }
         return handleFaults();
@@ -65,6 +66,8 @@ public class XmlParser {
         if (nodeItem.getNodeName().equals("text")) {
             colorString = nodeItem.getAttributes().getNamedItem("color").getNodeValue();
             sb.append(nodeItem.getTextContent());
+        } else if (nodeItem.getNodeName().equals("keyrequest")){
+            return new Object[]{sb, "keyrequest"};    // om keyrequest
         } else if (nodeItem.getNodeName().equals("encrypted")) {
             String encryptionType = nodeItem.getAttributes().getNamedItem("type").getNodeValue();
             String decryptedSring;
