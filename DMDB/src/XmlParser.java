@@ -11,6 +11,7 @@ import javax.xml.parsers.DocumentBuilderFactory;
 import javax.xml.parsers.ParserConfigurationException;
 import java.awt.*;
 import java.io.IOException;
+import java.io.ObjectInput;
 import java.io.StringReader;
 
 /**
@@ -25,19 +26,16 @@ public class XmlParser {
             Node rootNode = doc.getDocumentElement();
             if (rootNode.getNodeName().equals("message")) {
                 String name = rootNode.getAttributes().getNamedItem("sender").getNodeValue();
-                String colorString = "#000000";   //standardfärg svart
+                String colorString = "#000000";
                 NodeList nodeList = rootNode.getChildNodes();
                 Node nodeItem;
                 for (int i = 0; i < nodeList.getLength(); i++) {
                     nodeItem = nodeList.item(i);
+                    Object[] retArray = partParse(nodeItem, retsb);
+                    retsb =(StringBuilder)retArray[0];
+                    colorString = (String)retArray[1];
 
 
-                    if (nodeItem.getNodeName().equals("text")) {
-                        colorString = nodeItem.getAttributes().getNamedItem("color").getNodeValue();
-                        retsb.append(nodeItem.getTextContent());
-                    } else if (nodeItem.getNodeName().equals("encrypted")) {
-                        
-                    }
                 }
                 //retString = innerXml(doc.getDocumentElement());
 
@@ -60,6 +58,38 @@ public class XmlParser {
             return handleFaults();
         }
         return handleFaults();
+    }
+
+    private static Object[] partParse(Node nodeItem, StringBuilder sb) throws IOException, SAXException, ParserConfigurationException {
+        String colorString = "#000000";   //standardfärg svart
+        if (nodeItem.getNodeName().equals("text")) {
+            colorString = nodeItem.getAttributes().getNamedItem("color").getNodeValue();
+            sb.append(nodeItem.getTextContent());
+        } else if (nodeItem.getNodeName().equals("encrypted")) {
+            String encryptionType = nodeItem.getAttributes().getNamedItem("type").getNodeValue();
+            String decryptedSring;
+            if (encryptionType.equals("AES")) {
+                String encryptionKey = nodeItem.getAttributes().getNamedItem("key").getNodeValue();
+                decryptedSring = EncryptionClass.decryptAES(encryptionKey, nodeItem.getTextContent());
+            } else if (encryptionType.equals("caesar")) {
+                String encryptionKey = nodeItem.getAttributes().getNamedItem("key").getNodeValue();
+                decryptedSring = EncryptionClass.decryptCaesar(encryptionKey, nodeItem.getTextContent());
+
+            } else return new Object[]{sb, colorString};
+            decryptedSring = "<root>" + decryptedSring + "</root>";   // för att man ska kunna parsa
+            DocumentBuilder db = DocumentBuilderFactory.newInstance().newDocumentBuilder();
+            Document doc = db.parse(new InputSource(new StringReader(decryptedSring)));
+            Node rootNode = doc.getDocumentElement();
+            NodeList nodeList = rootNode.getChildNodes();
+            Node node;
+            for (int i = 0; i < nodeList.getLength(); i++) {
+                node = nodeList.item(i);
+                Object[] retArray = partParse(node, sb);
+                sb = (StringBuilder)retArray[0];
+                colorString = (String) retArray[1];
+            }
+        }
+        return new Object[]{sb, colorString};
     }
 
     public static String parseRequest(String xmlString) {

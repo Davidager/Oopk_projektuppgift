@@ -55,22 +55,25 @@ public class EncryptionClass {
 
     public static String[] encryptCaesar(String message) {
         Random random = new Random();
-        //int key = random.nextInt(28-1+1)+1;
-        int key = 1;
+        int key = random.nextInt(28-1+1)+1;
+        //int key = 1;
         char[] charArray = message.toCharArray();
+        int i = 0;
         for (char c : charArray) {
             if (contains(c, alphArray)) {
-                int newIndex = (indexOf(c, alphArray) + key)%29;
-                charArray[indexOf(c, charArray)] = alphArray[newIndex];
+                int newIndex = ((indexOf(c, alphArray) + key)%29);
+                charArray[i] = alphArray[newIndex];
 
             } else if (contains(c, alphArrayCaps)) {
                 int newIndex = (indexOf(c, alphArrayCaps) + key)%29;
-                charArray[indexOf(c, charArray)] = alphArrayCaps[newIndex];
+                charArray[i] = alphArrayCaps[newIndex];
             }
+            i++;
 
         }
         return new String[]{bytesToHex(Integer.toString(key).getBytes()),
                 bytesToHex(String.valueOf(charArray).getBytes())};
+        //return new String[]{Integer.toString(key), String.valueOf(String.valueOf(charArray))};
     }
 
     public static String decryptCaesar(String stringKey, String message) {
@@ -78,16 +81,20 @@ public class EncryptionClass {
 
         int key = Integer.parseInt(new String(hexStringToByteArray(stringKey), StandardCharsets.UTF_8));
         message = new String(hexStringToByteArray(message), StandardCharsets.UTF_8);
+
+        //int key = Integer.parseInt(stringKey);
+        //message = message;
         char[] charArray = message.toCharArray();
+        int i = 0;
         for (char c : charArray) {
             if (contains(c, alphArray)) {
                 int newIndex = (indexOf(c, alphArray) + 29 - key)%29;
-                charArray[indexOf(c, charArray)] = alphArray[newIndex];
+                charArray[i] = alphArray[newIndex];
             } else if (contains(c, alphArrayCaps)) {
                 int newIndex = (indexOf(c, alphArrayCaps) + 29 - key)%29;
-                charArray[indexOf(c, charArray)] = alphArrayCaps[newIndex];
+                charArray[i] = alphArrayCaps[newIndex];
             }
-
+            i++;
         }
         return String.valueOf(charArray);
     }
