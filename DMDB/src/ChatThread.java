@@ -14,7 +14,7 @@ public class ChatThread extends Thread implements Runnable{
     protected Color textColor;
     private InetAddress hostIP;
     private Socket socket;
-    private ChatFrame chatFrame;       // TODO: fixa så de inte stänger av direkt utan visar "putte har loggat ut".
+    private ChatFrame chatFrame;
     protected BufferedReader inText;
     protected PrintWriter outText;
     private InputStream inFile;
@@ -58,10 +58,12 @@ public class ChatThread extends Thread implements Runnable{
                     done = true;
                 }else {
                     String[] parsedArray = XmlParser.parse(s);
-                    if (parsedArray[2].equals("request")) {
-                        // TODO: sendtext blabla  fixa även för serverchatthread!
+                    if (parsedArray.length == 3){
+                        chatFrame.writeToChat(parsedArray[0], parsedArray[1], Color.decode(parsedArray[2]));
+                    }else {
+                        new ReceiveFileFrame(this, parsedArray[0], parsedArray[1], parsedArray[2], parsedArray[3]);
                     }
-                    chatFrame.writeToChat(parsedArray[0], parsedArray[1], Color.decode(parsedArray[2]));
+
                 }
             }catch (IOException e){
 

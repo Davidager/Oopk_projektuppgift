@@ -31,12 +31,24 @@ public class XmlParser {
                 Node nodeItem;
                 for (int i = 0; i < nodeList.getLength(); i++) {
                     nodeItem = nodeList.item(i);
-                    Object[] retArray = partParse(nodeItem, retsb);
-                    if (retArray[1].equals("keyrequest")) return new String[]{"", "", "request"};
+                    Object[] retArray = partParse(nodeItem, retsb, name);
+                    /*if (retArray[1].equals("keyrequest")) return new String[]{"", "", "request"};
                     retsb =(StringBuilder)retArray[0];
                     colorString = (String)retArray[1];
 
 
+                    if (nodeItem.getNodeName().equals("text")) {
+                        colorString = nodeItem.getAttributes().getNamedItem("color").getNodeValue();
+                        retsb.append(nodeItem.getTextContent());
+                    } else if (nodeItem.getNodeName().equals("encrypted")) {
+
+                    } else if (nodeItem.getNodeName().equals("filerequest")){
+                        String fileName = nodeItem.getAttributes().getNamedItem("name").getNodeValue();
+                        String fileSize = nodeItem.getAttributes().getNamedItem("size").getNodeValue();
+                        retsb.append(nodeItem.getTextContent());
+                        String s = "krypto";
+                        return new String[]{retsb.toString(), name,  fileName, fileSize, s};
+                    }
                 }
                 //retString = innerXml(doc.getDocumentElement());
 
@@ -44,7 +56,7 @@ public class XmlParser {
                 if (encryptedList.getLength() > 0) {
                    // String[] retParts = retString.split("<encrypted>");
                     //retParts =
-                    //dekryptera
+                    //dekryptera */
                 }
 
                 return new String[]{retsb.toString(), name, colorString};
@@ -61,7 +73,7 @@ public class XmlParser {
         return handleFaults();
     }
 
-    private static Object[] partParse(Node nodeItem, StringBuilder sb) throws IOException, SAXException, ParserConfigurationException {
+    private static Object[] partParse(Node nodeItem, StringBuilder sb, String name) throws IOException, SAXException, ParserConfigurationException {
         String colorString = "#000000";   //standardfärg svart
         if (nodeItem.getNodeName().equals("text")) {
             colorString = nodeItem.getAttributes().getNamedItem("color").getNodeValue();
@@ -87,10 +99,16 @@ public class XmlParser {
             Node node;
             for (int i = 0; i < nodeList.getLength(); i++) {
                 node = nodeList.item(i);
-                Object[] retArray = partParse(node, sb);
+                Object[] retArray = partParse(node, sb, name);
                 sb = (StringBuilder)retArray[0];
                 colorString = (String) retArray[1];
             }
+        } else if (nodeItem.getNodeName().equals("filerequest")){
+            String fileName = nodeItem.getAttributes().getNamedItem("name").getNodeValue();
+            String fileSize = nodeItem.getAttributes().getNamedItem("size").getNodeValue();
+            sb.append(nodeItem.getTextContent());
+            String s = "krypto";
+            return new String[]{sb.toString(), name,  fileName, fileSize};
         }
         return new Object[]{sb, colorString};
     }

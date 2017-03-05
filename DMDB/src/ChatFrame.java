@@ -6,6 +6,7 @@ import javax.swing.event.CaretListener;
 import javax.swing.text.*;
 import java.awt.*;
 import java.awt.event.*;
+import java.io.File;
 
 /**
  * Created by Dexter on 2017-02-22.
@@ -65,7 +66,7 @@ public class ChatFrame extends JFrame implements ActionListener{
         });
 
         JPanel buttonPanel = new JPanel();
-        buttonPanel.setLayout(new GridLayout(2,2));
+        buttonPanel.setLayout(new GridLayout(2, 2));
         buttonPanel.add(sendButton);
         buttonPanel.add(discButton);
         buttonPanel.add(fileButton);
@@ -124,6 +125,8 @@ public class ChatFrame extends JFrame implements ActionListener{
         }
         if (e.getSource() == fileButton) {
             System.out.println(myText.getText());
+            new FileFrame(this);
+
         }
         if (e.getSource() == aesButton) {
 
@@ -216,6 +219,10 @@ public class ChatFrame extends JFrame implements ActionListener{
         return myText;
     }
 
+    protected void setMyText(JTextPane myText){
+        this.myText = myText;
+    }
+
     protected void submitText() {
         String textMessage = submitHelper();
         if (textMessage.isEmpty()) return;
@@ -236,6 +243,16 @@ public class ChatFrame extends JFrame implements ActionListener{
 
         myText.setText("");
         return retString;
+    }
+
+    public void submitFile(File file, String filetext){
+        String hexaColor = String.format("#%02X%02X%02X", myColor.getRed(),
+                myColor.getGreen(), myColor.getBlue());
+        //String standardFileText = "Förfrågan om att skicka följande fil: " + file.getName() + ". Vill du mottaga denna fil?";
+        String fileMessage = "";
+        fileMessage = "<message sender=\"" + myName + "\"><filerequest name=\"" + file.getName() + "\" size=\"" + file.length() + "\">" + filetext + "</filerequest></message>";
+        System.out.println(fileMessage);
+        //chatThread.sendText(fileMessage);
     }
 
     public void writeToChat(String text, String name, Color color) {
@@ -401,6 +418,7 @@ public class ChatFrame extends JFrame implements ActionListener{
 
         return sb.toString();
     }
+
 
 
 
