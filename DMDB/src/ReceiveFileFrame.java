@@ -9,13 +9,15 @@ import java.net.Socket;
  */
 public class ReceiveFileFrame extends JFrame implements ActionListener{
     private ChatThread chatThread;
+    private ServerChatThread serverChatThread;
     private String fileInfo, fileName, fileSize, name;
     private JButton accept,deny;
     private JTextField infoResponse;
     private Socket socket;
+    private boolean chatThreadYes;
+    private ServerChatThread.ReceivingThread receivingThread;
 
-    public ReceiveFileFrame(ChatThread chatThread, String fileInfo, String name, String fileName, String fileSize){
-        this.chatThread = chatThread;
+    public ReceiveFileFrame(String fileInfo, String name, String fileName, String fileSize){
         this.fileInfo = fileInfo;
         this.fileName = fileName;
         this.fileSize = fileSize;
@@ -25,10 +27,10 @@ public class ReceiveFileFrame extends JFrame implements ActionListener{
         JLabel lab = new JLabel("Avsändare: " + name);
         JLabel lab2 = new JLabel("Filnamn: " + fileName);
         JLabel lab3 = new JLabel("Filstorlek: " + fileSize + " bytes");
-        JTextField infoResponse = new JTextField("Skicka ett svar till " + name);
+        infoResponse = new JTextField("Skicka ett svar till " + name);
         infoResponse.setPreferredSize(new Dimension(300,50));
-        JButton accept = new JButton("Acceptera fil");
-        JButton deny = new JButton("Neka fil");
+        accept = new JButton("Acceptera fil");
+        deny = new JButton("Neka fil");
         JPanel infoPanel = new JPanel();
         infoPanel.setLayout(new GridLayout(3,1));
         infoPanel.add(lab);
@@ -52,23 +54,63 @@ public class ReceiveFileFrame extends JFrame implements ActionListener{
         pack();
         setVisible(true);
     }
+    public ReceiveFileFrame(ChatThread chatThread, String fileInfo, String name, String fileName, String fileSize) {
+        this(fileInfo, name, fileName, fileSize);
+        chatThreadYes = true;
+        this.chatThread = chatThread;
+
+    }
+
+    public ReceiveFileFrame(ServerChatThread serverChatThread, ServerChatThread.ReceivingThread receivingThread, String fileInfo, String name, String fileName, String fileSize) {
+        this(fileInfo, name, fileName, fileSize);
+        chatThreadYes = false;
+        this.serverChatThread = serverChatThread;
+        this.receivingThread = receivingThread;
+    }
 
     public void actionPerformed(ActionEvent e){
-        if (e.getSource() == accept){
-            String s = infoResponse.getText();
-            String fileMessage = "";
-            int port = 4455;
-            fileMessage = "<message sender=\"" + myName + "\"><fileresponse reply=\"" + file.getName() + "\" port=\"" + Integer.toString(port) + "\">" + s + "</fileresponse></message>";
+        String fileMessage;
+        String s = infoResponse.getText();
+        int port = 4555;
+        if (chatThreadYes) {
+            System.out.println("check5");
+            if (e.getSource() == accept) {
+                System.out.println("check3");
 
-            chatThread.sendText(s);
-            new FileThread(s, chatThread);
-        }
-        if (e.getSource() == deny){
+                fileMessage = "<message sender=\"" + chatThread.getMyName() + "\"><fileresponse reply=\"" +
+                        "yes" + "\" port=\"" + Integer.toString(port) + "\">" + s + "</fileresponse></message>";
+                chatThread.sendText(fileMessage);
+                FileThread fileThread = new FileThread(chatThread.getSocket());
+                fileThread.startReceivingFile(port, fileSize, fileName);
+            }
+            if (e.getSource() == deny) {
+                fileMessage = "<message sender=\"" + chatThread.getMyName() + "\"><fileresponse reply=\"" +
+                        "no" + "\" port=\"" + Integer.toString(port) + "\">" + s + "</fileresponse></message>";
+                chatThread.sendText(fileMessage);
+            }
+        } else {
+            System.out.println("check4");
+            if (e.getSource() == accept) {
+                System.out.println("check1");
 
+                fileMessage = "<message sender=\"" + serverChatThread.getMyName() + "\"><fileresponse reply=\"" +
+                        "yes" + "\" port=\"" + Integer.toString(port) + "\">" + s + "</fileresponse></message>";
+                receivingThread.sendToOne(fileMessage);
+                FileThread fileThread = new FileThread(receivingThread.getThreadSocket());
+                fileThread.startReceivingFile(port, fileSize, fileName);
+            }
+            if (e.getSource() == deny) {
+
+                fileMessage = "<message sender=\"" + serverChatThread.getMyName() + "\"><fileresponse reply=\"" +
+                        "no" + "\" port=\"" + Integer.toString(port) + "\">" + s + "</fileresponse></message>";
+                receivingThread.sendToOne(fileMessage);
+            }
         }
+        setVisible(false);
+        dispose();
     }
 
-    public static void main(String[] args) {
-        new ReceiveFileFrame("a", "b", "c", "d");
-    }
+    //public static void main(String[] args) {
+        //new ReceiveFileFrame("a", "b", "c", "d");
+    //}
 }

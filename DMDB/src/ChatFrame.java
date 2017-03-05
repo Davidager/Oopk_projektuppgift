@@ -1,5 +1,3 @@
-import oracle.jrockit.jfr.JFR;
-
 import javax.swing.*;
 import javax.swing.event.CaretEvent;
 import javax.swing.event.CaretListener;
@@ -116,6 +114,10 @@ public class ChatFrame extends JFrame implements ActionListener{
         chatThread.closeThread();
     }
 
+    protected void fileButtonPressed() {
+        new FileFrame(this);
+    }
+
     public void actionPerformed(ActionEvent e) {
         if (e.getSource() == sendButton) {
             submitText();
@@ -125,7 +127,7 @@ public class ChatFrame extends JFrame implements ActionListener{
         }
         if (e.getSource() == fileButton) {
             System.out.println(myText.getText());
-            new FileFrame(this);
+            fileButtonPressed();
 
         }
         if (e.getSource() == aesButton) {
@@ -224,14 +226,14 @@ public class ChatFrame extends JFrame implements ActionListener{
     }
 
     protected void submitText() {
-        String textMessage = submitHelper();
+        String textMessage = submitTextHelper();
         if (textMessage.isEmpty()) return;
         chatThread.sendText(textMessage);
 
 
     }
 
-    protected String submitHelper() {
+    protected String submitTextHelper() {
         String textMessage = myText.getText();
         if (textMessage.isEmpty()) return "";   // inte skicka något om inget är inskrivet
 
@@ -245,15 +247,25 @@ public class ChatFrame extends JFrame implements ActionListener{
         return retString;
     }
 
-    public void submitFile(File file, String filetext){
-        String hexaColor = String.format("#%02X%02X%02X", myColor.getRed(),
-                myColor.getGreen(), myColor.getBlue());
+    protected void submitFile(File file, String filetext) {
+        //String hexaColor = String.format("#%02X%02X%02X", myColor.getRed(),
+        //  myColor.getGreen(), myColor.getBlue());
         //String standardFileText = "Förfrågan om att skicka följande fil: " + file.getName() + ". Vill du mottaga denna fil?";
-        String fileMessage = "";
-        fileMessage = "<message sender=\"" + myName + "\"><filerequest name=\"" + file.getName() + "\" size=\"" + file.length() + "\">" + filetext + "</filerequest></message>";
+        String fileMessage = submitFileHelper(file, filetext);
         System.out.println(fileMessage);
-        //chatThread.sendText(fileMessage);
+        FileThread fileThread = new FileThread(chatThread.getSocket());
+        fileThread.setFile(file);
+        fileThread.startListeningForResponse();
+        chatThread.sendText(fileMessage);
     }
+
+    protected String submitFileHelper(File file, String filetext) {
+        String retString = "<message sender=\"" + myName + "\"><filerequest name=\""
+                + file.getName() + "\" size=\"" + file.length() + "\">" + filetext
+                + "</filerequest></message>";
+        return retString;
+    }
+
 
     public void writeToChat(String text, String name, Color color) {
         StyledDocument chatDoc = chatText.getStyledDocument();

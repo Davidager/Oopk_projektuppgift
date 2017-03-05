@@ -3,6 +3,10 @@ import java.awt.*;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.io.File;
+import java.io.FileNotFoundException;
+import java.io.PrintWriter;
+import java.net.Socket;
+import java.util.Hashtable;
 
 /**
  * Created by Dexter on 2017-03-02.
@@ -13,15 +17,14 @@ public class FileFrame extends JFrame implements ActionListener {
     private JComboBox selectFileRecipient;
     private JTextPane fileInfo;
     private ChatFrame chatFrame;
+    private ServerChatFrame serverChatFrame;
+    private boolean chatFrameYes;
 
-    public FileFrame(ChatFrame chatFrame){
-        this.chatFrame = chatFrame;
-
+    public FileFrame() {
         setLayout(new BoxLayout(getContentPane(), BoxLayout.PAGE_AXIS));
         selectFile = new JButton("Välj fil");
         sendFile = new JButton("Skicka");
         cancel = new JButton("Avbryt");
-        //selectFileRecipient = new JComboBox();
         JLabel label = new JLabel("OBS! Filer kan endast skickas till servern.");
         fileInfo = new JTextPane();
         fileInfo.setPreferredSize(new Dimension(300,50));
@@ -47,9 +50,45 @@ public class FileFrame extends JFrame implements ActionListener {
         sendFile.addActionListener(this);
         cancel.addActionListener(this);
 
+
+    }
+
+    public FileFrame(ChatFrame chatFrame){
+        this();
+        chatFrameYes = true;
+        this.chatFrame = chatFrame;
         pack();
         setVisible(true);
 
+
+
+
+
+    }
+
+    public FileFrame(ServerChatFrame serverChatFrame, ServerChatThread serverChatThread) {
+        this();
+        chatFrameYes = false;
+        this.serverChatFrame = serverChatFrame;
+        Hashtable<Socket, PrintWriter> socketPrintTable = serverChatThread.getSocketPrintWriterHashtable();
+        Hashtable<Socket, String> socketNameTable = serverChatThread.getSocketandNameHashtable();
+
+
+
+        Object[] items = new Object[socketPrintTable.size()];
+        int temp = 0;
+        for (Socket key : socketPrintTable.keySet()) {
+            if (socketNameTable.containsKey(key)) {
+                items[temp] = new PossibilityHelper(key, socketNameTable.get(key));
+            } else {
+                items[temp] = new PossibilityHelper(key, "Person med okänt namn");
+            }
+            temp++;
+        }
+        selectFileRecipient = new JComboBox(items);
+        add(selectFileRecipient);
+        pack();
+        setVisible(true);
 
     }
 
@@ -67,9 +106,14 @@ public class FileFrame extends JFrame implements ActionListener {
             //String s = "Förfrågan om att skicka följande fil: " + selectedFile.getName() + ". Vill du mottaga denna fil?";
             //chatFrame.writeToChat(s, chatFrame.getMyName(), chatFrame.getMyColor());
             try {
-                chatFrame.submitFile(selectedFile, fileInfo.getText());
+
+                if (chatFrameYes){ chatFrame.submitFile(selectedFile, fileInfo.getText());}
+                else{
+                    PossibilityHelper posHelper = (PossibilityHelper)selectFileRecipient.getSelectedItem();
+                    serverChatFrame.submitFile(selectedFile, fileInfo.getText(), posHelper.getSocket());}
                 setVisible(false);
                 dispose();
+
             } catch (NullPointerException e1){
                 JOptionPane.showMessageDialog(this, "Vänligen välj en fil!");
             }
@@ -80,5 +124,23 @@ public class FileFrame extends JFrame implements ActionListener {
             setVisible(false);
             dispose();
         }
+    }
+}
+
+class PossibilityHelper {
+    String connectedName;
+    public Socket socket;
+
+    public PossibilityHelper(Socket socket, String connectedName) {
+        this.socket = socket;
+        this.connectedName = connectedName;
+    }
+
+    public Socket getSocket() {
+        return socket;
+    }
+
+    public String toString() {
+        return connectedName;
     }
 }

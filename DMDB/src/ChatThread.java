@@ -24,7 +24,7 @@ public class ChatThread extends Thread implements Runnable{
 
     public ChatThread(Socket socket, String name, Color textColor){
         this.socket = socket;
-        this.name = name;
+        this.name = name;   //TODO: close inputstreams
         this.textColor = textColor;
         System.out.println(socket);
 
@@ -45,6 +45,10 @@ public class ChatThread extends Thread implements Runnable{
 
     }
 
+    public String getMyName() {
+        return name;
+    }
+
     public void run(){
         chatFrame.setChatThread(this);
         done = false;
@@ -58,10 +62,15 @@ public class ChatThread extends Thread implements Runnable{
                     done = true;
                 }else {
                     String[] parsedArray = XmlParser.parse(s);
-                    if (parsedArray.length == 3){
-                        chatFrame.writeToChat(parsedArray[0], parsedArray[1], Color.decode(parsedArray[2]));
-                    }else {
-                        new ReceiveFileFrame(this, parsedArray[0], parsedArray[1], parsedArray[2], parsedArray[3]);
+                    if (parsedArray[0].equals("text")){
+                        chatFrame.writeToChat(parsedArray[1], parsedArray[2], Color.decode(parsedArray[3]));
+                    } else if (parsedArray[0].equals("filerequest")) {
+                        new ReceiveFileFrame(this, parsedArray[1], parsedArray[2], parsedArray[3], parsedArray[4]);
+                    } else if (parsedArray[0].equals("keyrequest")) {
+                        sendText("<message sender=\"" + name + "\"><text color=\""
+                                + String.format("#%02X%02X%02X", textColor.getRed(),
+                                textColor.getGreen(), textColor.getBlue()) + "\">" +
+                                "Detta program skickar ingen nyckel!" + "</text></message>");
                     }
 
                 }
@@ -73,6 +82,10 @@ public class ChatThread extends Thread implements Runnable{
 
     protected void runMethod() {
 
+    }
+
+    protected Socket getSocket() {
+        return socket;
     }
 
     public void closeThread(){

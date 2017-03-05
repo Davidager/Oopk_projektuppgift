@@ -1,8 +1,6 @@
 import javax.swing.*;
 import java.awt.*;
-import java.awt.event.WindowAdapter;
-import java.awt.event.WindowEvent;
-import java.awt.event.WindowListener;
+import java.io.File;
 import java.io.IOException;
 import java.io.PrintWriter;
 import java.net.Socket;
@@ -24,6 +22,11 @@ public class ServerChatFrame extends ChatFrame{
 
         //this.serverChatThread = serverChatThread;
 
+    }
+
+    @Override
+    protected void fileButtonPressed() {
+        new FileFrame(this, serverChatThread);
     }
 
     @Override
@@ -76,7 +79,7 @@ public class ServerChatFrame extends ChatFrame{
                         frameClose();
                     } else {
                         PossibilityHelper posHelper = (PossibilityHelper)obj;
-                        serverChatThread.removeSocket(posHelper.getSocket());// varför funkar inte dettA???
+                        serverChatThread.removeSocket(posHelper.getSocket());//
                         try {
                             posHelper.getSocket().close();
                         } catch (IOException e) {
@@ -93,9 +96,23 @@ public class ServerChatFrame extends ChatFrame{
         return serverNumber;
     }
 
+    protected void submitFile(File file, String fileInfo, Socket socket) {
+        String fileMessage = submitFileHelper(file, fileInfo);
+        System.out.println(fileMessage);
+        FileThread fileThread = new FileThread(socket);
+        fileThread.setFile(file);
+        fileThread.startListeningForResponse();
+        try {
+            PrintWriter out = new PrintWriter(socket.getOutputStream(), true);
+            out.println(fileMessage);
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
+    }
+
     @Override
     protected void submitText() {
-        String textMessage = submitHelper();
+        String textMessage = submitTextHelper();
         if (textMessage.isEmpty()) return;
         serverChatThread.sendText(textMessage);
     }

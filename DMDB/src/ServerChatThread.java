@@ -123,12 +123,13 @@ public class ServerChatThread extends ChatThread implements Runnable {
         }
     }
 
+
     public void addToSocketList(Socket socket){
         ReceivingThread receivingThread = new ReceivingThread(socket);
         receivingThread.start();
     }
 
-    private class ReceivingThread extends Thread implements Runnable {
+    protected class ReceivingThread extends Thread implements Runnable {
         private Socket threadSocket;
         BufferedReader myInText;
         PrintWriter myOutText;
@@ -152,7 +153,7 @@ public class ServerChatThread extends ChatThread implements Runnable {
             while(!done){
                 try{
                     String s = myInText.readLine();
-                    System.out.println(s);
+                    System.out.println(s + "1");
                     if (s==null){
                         System.out.println("Server disconnect in receivThread");
                         removeSocket(threadSocket);
@@ -168,15 +169,38 @@ public class ServerChatThread extends ChatThread implements Runnable {
                             }
                         }
                         String[] parsedArray = XmlParser.parse(s);
-                        if (!socketandNameHashTable.containsKey(threadSocket)) {   // lägger in namn!
-                            socketandNameHashTable.put(threadSocket, parsedArray[1]);
+                        if (parsedArray[0].equals("text")){
+                            if (!socketandNameHashTable.containsKey(threadSocket)) {   // lägger in namn!
+                                socketandNameHashTable.put(threadSocket, parsedArray[1]);
+                            }
+                            serverChatFrame.writeToChat(parsedArray[1], parsedArray[2], Color.decode(parsedArray[3]));
+                        } else if (parsedArray[0].equals("filerequest")) {
+                            new ReceiveFileFrame(ServerChatThread.this, this,
+                                    parsedArray[1], parsedArray[2], parsedArray[3], parsedArray[4]);
+
+                        } else if (parsedArray[0].equals("keyrequest")) {
+                            sendToOne("<message sender=\"" + name + "\"><text color=\""
+                                    + String.format("#%02X%02X%02X", textColor.getRed(),
+                                    textColor.getGreen(), textColor.getBlue()) + "\">" +
+                                    "Detta program skickar ingen nyckel!" + "</text></message>");
                         }
-                        serverChatFrame.writeToChat(parsedArray[0], parsedArray[1], Color.decode(parsedArray[2]));
+
+
                     }
                 }catch (IOException e){
 
                 }
             }
+        }
+
+        protected Socket getThreadSocket() {
+            return threadSocket;
+        }
+
+        public void sendToOne(String message) {
+            System.out.println("check2");
+            myOutText.println(message);
+
         }
     }
 }

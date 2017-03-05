@@ -26,17 +26,25 @@ public class XmlParser {
             Node rootNode = doc.getDocumentElement();
             if (rootNode.getNodeName().equals("message")) {
                 String name = rootNode.getAttributes().getNamedItem("sender").getNodeValue();
-                String colorString = "#000000";
+                String colorString = "#000000";  //standard svart
                 NodeList nodeList = rootNode.getChildNodes();
                 Node nodeItem;
                 for (int i = 0; i < nodeList.getLength(); i++) {
                     nodeItem = nodeList.item(i);
-                    Object[] retArray = partParse(nodeItem, retsb, name);
-                    /*if (retArray[1].equals("keyrequest")) return new String[]{"", "", "request"};
-                    retsb =(StringBuilder)retArray[0];
-                    colorString = (String)retArray[1];
+                    Object[] retArray = partParse(nodeItem, retsb, name, colorString);
 
+                    if (retArray[0].equals("keyrequest")) return new String[]{"keyrequest","", "", ""};
+                    //if (ret)
+                    if (retArray[0].equals("text")) {
+                        retsb =(StringBuilder)retArray[1];
+                        colorString = (String)retArray[2];
+                    }
+                    if (retArray[0].equals("filerequest")) {
+                        return (String[])retArray;
+                        //return new String[]{(String)retArray[1], retArray[2], retArray[3], retArray[4]};
+                    }
 
+                    /*
                     if (nodeItem.getNodeName().equals("text")) {
                         colorString = nodeItem.getAttributes().getNamedItem("color").getNodeValue();
                         retsb.append(nodeItem.getTextContent());
@@ -59,7 +67,7 @@ public class XmlParser {
                     //dekryptera */
                 }
 
-                return new String[]{retsb.toString(), name, colorString};
+                return new String[]{"text", retsb.toString(), name, colorString};
 
 
             }
@@ -73,13 +81,13 @@ public class XmlParser {
         return handleFaults();
     }
 
-    private static Object[] partParse(Node nodeItem, StringBuilder sb, String name) throws IOException, SAXException, ParserConfigurationException {
-        String colorString = "#000000";   //standardfärg svart
+    private static Object[] partParse(Node nodeItem, StringBuilder sb, String name, String colorString) throws IOException, SAXException, ParserConfigurationException {
+        //colorString = "#000000";   //standardfärg svart
         if (nodeItem.getNodeName().equals("text")) {
             colorString = nodeItem.getAttributes().getNamedItem("color").getNodeValue();
             sb.append(nodeItem.getTextContent());
         } else if (nodeItem.getNodeName().equals("keyrequest")){
-            return new Object[]{sb, "keyrequest"};    // om keyrequest
+            return new Object[]{"keyrequest", sb};    // om keyrequest
         } else if (nodeItem.getNodeName().equals("encrypted")) {
             String encryptionType = nodeItem.getAttributes().getNamedItem("type").getNodeValue();
             String decryptedSring;
@@ -99,18 +107,24 @@ public class XmlParser {
             Node node;
             for (int i = 0; i < nodeList.getLength(); i++) {
                 node = nodeList.item(i);
-                Object[] retArray = partParse(node, sb, name);
-                sb = (StringBuilder)retArray[0];
-                colorString = (String) retArray[1];
+                Object[] retArray = partParse(node, sb, name, colorString);
+                sb = (StringBuilder)retArray[1];
+                colorString = (String) retArray[2];
             }
         } else if (nodeItem.getNodeName().equals("filerequest")){
             String fileName = nodeItem.getAttributes().getNamedItem("name").getNodeValue();
             String fileSize = nodeItem.getAttributes().getNamedItem("size").getNodeValue();
             sb.append(nodeItem.getTextContent());
             String s = "krypto";
-            return new String[]{sb.toString(), name,  fileName, fileSize};
+            return new String[]{"filerequest", sb.toString(), name,  fileName, fileSize};
+        } else if (nodeItem.getNodeName().equals("fileresponse")) {
+            System.out.println("fileresponse");
+            String reply = nodeItem.getAttributes().getNamedItem("reply").getNodeValue();
+            String port = nodeItem.getAttributes().getNamedItem("port").getNodeValue();
+            sb.append(nodeItem.getTextContent());
+            return new String[]{"fileresponse", sb.toString(), reply, port};
         }
-        return new Object[]{sb, colorString};
+        return new Object[]{"text", sb, colorString};
     }
 
     public static String parseRequest(String xmlString) {
