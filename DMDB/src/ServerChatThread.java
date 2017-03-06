@@ -177,7 +177,7 @@ public class ServerChatThread extends ChatThread implements Runnable {
                         String[] parsedArray = XmlParser.parse(s);
                         if (parsedArray[0].equals("text")){
                             if (!socketandNameHashTable.containsKey(threadSocket)) {   // lägger in namn!
-                                socketandNameHashTable.put(threadSocket, parsedArray[1]);
+                                socketandNameHashTable.put(threadSocket, parsedArray[2]);
                             }
                             serverChatFrame.writeToChat(parsedArray[1], parsedArray[2], Color.decode(parsedArray[3]));
                         } else if (parsedArray[0].equals("filerequest")) {

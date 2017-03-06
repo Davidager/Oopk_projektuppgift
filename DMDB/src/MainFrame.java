@@ -36,7 +36,7 @@ public class MainFrame extends JFrame implements ActionListener {
         JLabel label2 = new JLabel("Ange portnummer", JLabel.LEADING);
         JLabel label3 = new JLabel("Ange portnummer samt IP-address",JLabel.LEADING);
 
-        okClientButton = new JButton("Bekräfta klient");
+        okClientButton = new JButton("Bekräfta klient");   // TODO: fixa så att man kan svara nej 
         okServerButton = new JButton("Bekräfta server");
 
         String[] items = {"Blå", "Röd", "Svart", "Grön"};
