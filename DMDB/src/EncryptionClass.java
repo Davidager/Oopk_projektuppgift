@@ -99,6 +99,88 @@ public class EncryptionClass {
         return String.valueOf(charArray);
     }
 
+    public static String[] encryptFileAES(byte[] dataToEncrypt) {
+        KeyGenerator AESgen;
+
+        byte[]keyContent;
+
+        try {
+            AESgen = KeyGenerator.getInstance("AES");
+            AESgen.init(128);
+            SecretKeySpec AESkey = (SecretKeySpec)AESgen.generateKey();
+            keyContent = AESkey.getEncoded();
+
+            Cipher AEScipher = Cipher.getInstance("AES");
+            AEScipher.init(Cipher.ENCRYPT_MODE, AESkey);
+            byte[] cipherData = AEScipher.doFinal(dataToEncrypt);
+
+            return new String[]{bytesToHex(keyContent), bytesToHex(cipherData)};
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
+        return new String[]{""}; // kommer ej hända
+    }
+
+    public static byte[] decryptFileAES(String key, byte[] cipherData) {
+        byte[] keyContent = hexStringToByteArray(key);
+        SecretKeySpec decodeKey = new SecretKeySpec(keyContent, "AES");
+
+        try {
+            Cipher AEScipher = Cipher.getInstance("AES");
+            AEScipher.init(Cipher.DECRYPT_MODE, decodeKey);
+            byte[] decryptedData = AEScipher.doFinal(cipherData);
+            return decryptedData;
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
+        return new byte[2]; //händer aldrig
+    }
+
+    public static String[] encryptFileCaesar(byte[] dataToEncrypt) {
+        Random random = new Random();
+        int key = random.nextInt(28-1+1)+1;
+        String message = bytesToHex(dataToEncrypt);
+        //int key = 1;
+        char[] charArray = message.toCharArray();
+        int i = 0;
+        for (char c : charArray) {
+            if (contains(c, alphArray)) {
+                int newIndex = ((indexOf(c, alphArray) + key)%29);
+                charArray[i] = alphArray[newIndex];
+
+            } else if (contains(c, alphArrayCaps)) {
+                int newIndex = (indexOf(c, alphArrayCaps) + key)%29;
+                charArray[i] = alphArrayCaps[newIndex];
+            }
+            i++;
+
+        }
+        return new String[]{Integer.toString(key), String.valueOf(charArray)};
+        //return new String[]{Integer.toString(key), String.valueOf(String.valueOf(charArray))};
+    }
+
+    public static byte[] decryptFileCaesar(String stringKey, byte[] dataToDecrypt) {
+
+
+        int key = Integer.parseInt(new String(hexStringToByteArray(stringKey), StandardCharsets.UTF_8));
+        String message = bytesToHex(dataToDecrypt);
+        //int key = Integer.parseInt(stringKey);
+        //message = message;
+        char[] charArray = message.toCharArray();
+        int i = 0;
+        for (char c : charArray) {
+            if (contains(c, alphArray)) {
+                int newIndex = (indexOf(c, alphArray) + 29 - key)%29;
+                charArray[i] = alphArray[newIndex];
+            } else if (contains(c, alphArrayCaps)) {
+                int newIndex = (indexOf(c, alphArrayCaps) + 29 - key)%29;
+                charArray[i] = alphArrayCaps[newIndex];
+            }
+            i++;
+        }
+        return String.valueOf(charArray).getBytes();
+    }
+
 
 
     private static int indexOf(char val, char[] arr) {    // från stackoverflow

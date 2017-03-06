@@ -24,7 +24,7 @@ public class ListeningThread extends Thread implements Runnable {
         threadList = new ArrayList();
 
         try {
-            serverSocket = new ServerSocket(portNumber, 0, InetAddress.getByName(null));
+            serverSocket = new ServerSocket(portNumber);
         } catch (IOException e) {
             System.out.println("Could not listen to port: " + portNumber);
             System.out.println(e);

@@ -74,6 +74,7 @@ public class FileFrame extends JFrame implements ActionListener {
 
     }
 
+
     public FileFrame(ServerChatFrame serverChatFrame, ServerChatThread serverChatThread) {
         this();
         chatFrameYes = false;
@@ -116,17 +117,26 @@ public class FileFrame extends JFrame implements ActionListener {
             try {
 
                 if (chatFrameYes){
-                    if (aesButton.isEnabled()){
-                        chatFrame.submitFile(selectedFile, fileInfo.getText());
-                    } else if (caesarButton.isEnabled()){
-                        chatFrame.submitFile(selectedFile, fileInfo.getText());
+                    if (aesButton.isSelected()){
+                        chatFrame.submitFile(selectedFile, fileInfo.getText(), "AES");
+                        //System.out.println("TTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTT filemfrae");
+                    } else if (caesarButton.isSelected()){
+                        chatFrame.submitFile(selectedFile, fileInfo.getText(), "caesar");
                     } else{
-                        chatFrame.submitFile(selectedFile, fileInfo.getText());
+                        chatFrame.submitFile(selectedFile, fileInfo.getText(), "");
                     }
                 }
                 else{
                     PossibilityHelper posHelper = (PossibilityHelper)selectFileRecipient.getSelectedItem();
-                    serverChatFrame.submitFile(selectedFile, fileInfo.getText(), posHelper.getSocket());}
+                    if (aesButton.isSelected()){
+                        //System.out.println("WWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWW  fileframe");
+                        serverChatFrame.submitFile(selectedFile, fileInfo.getText(), posHelper.getSocket(), "AES");
+                    } else if (caesarButton.isSelected()){
+                        serverChatFrame.submitFile(selectedFile, fileInfo.getText(), posHelper.getSocket(), "caesar");
+                    } else{
+                        serverChatFrame.submitFile(selectedFile, fileInfo.getText(), posHelper.getSocket(), "");
+                    }
+                }
                 setVisible(false);
                 dispose();
 

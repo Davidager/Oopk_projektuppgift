@@ -20,6 +20,9 @@ public class FileThread extends Thread implements Runnable {
     BufferedReader myInText;
     Socket socket;
     File file;
+    private byte[] fileBytesArray;
+    private String cryptoKey;
+    private String cryptoType;
 
     public FileThread(Socket socket){
         this.socket = socket;
@@ -33,6 +36,16 @@ public class FileThread extends Thread implements Runnable {
     protected void setFile(File file) {
         this.file = file;
     }
+
+    protected void setFileByteArray(byte[] fileBytesArray) {
+        this.fileBytesArray = fileBytesArray;
+    }
+
+    protected void setCryptoInfo(String cryptoType, String cryptoKey) {
+        this.cryptoType = cryptoType;
+        this.cryptoKey = cryptoKey;
+    }
+
 
     protected void startReceivingFile(int portNumber, String fileSize, String fileName) {
         ServerSocket serverSocket;
@@ -63,7 +76,7 @@ public class FileThread extends Thread implements Runnable {
                     String filePath = (new File("").getAbsolutePath()) + "\\" + fileName;
                     try {
                         // receive file
-                        byte [] myByteArray  = new byte [Integer.parseInt(fileSize)+100];
+                        byte [] myByteArray  = new byte [Integer.parseInt(fileSize)];
                         InputStream is = clientSocket.getInputStream();
                         fileOutputStream = new FileOutputStream(filePath);
                         bufferedOutputStream = new BufferedOutputStream(fileOutputStream);
@@ -76,14 +89,24 @@ public class FileThread extends Thread implements Runnable {
 
                         bytesRead = is.read(myByteArray,0,myByteArray.length);
                         current = bytesRead;
-
+                        System.out.println(current + "current1");
                         do {
                             bytesRead =
                                     is.read(myByteArray, current, (myByteArray.length-current));
                             if(bytesRead >= 0) current += bytesRead;
+                            System.out.println(current + "current2");
                         } while(current < Integer.parseInt(fileSize));
                         System.out.println("done");
+                        System.out.println(cryptoType);
+                        if (cryptoType.equals("AES")||cryptoType.equals("caesar")) {
+                            if (cryptoType.equals("AES")) {
+                                myByteArray = EncryptionClass.decryptFileAES(cryptoKey, myByteArray);
+                            } else if (cryptoType.equals("caesar")) {
+                                myByteArray = EncryptionClass.decryptFileCaesar(cryptoKey, myByteArray);
+                            }
+                        }
                         // input.close();
+                        System.out.println(myByteArray.length);
                         bufferedOutputStream.write(myByteArray, 0 , current);
                         bufferedOutputStream.flush();
                     } catch (IOException e) {
@@ -98,18 +121,18 @@ public class FileThread extends Thread implements Runnable {
     protected void startSendingFile(String[] parsedArray) {
         try {
             Socket newSocket = new Socket(socket.getInetAddress(), Integer.parseInt(parsedArray[3]));
-            FileInputStream fileInputStream = null;
-            BufferedInputStream bufferedInputStream = null;
+            //FileInputStream fileInputStream = null;
+            //BufferedInputStream bufferedInputStream = null;
             OutputStream outputStream = null;
             System.out.println("hello from sending");
 
-            byte[] fileBytes = new byte[(int) file.length()];
-            fileInputStream = new FileInputStream(file);
+            //byte[] fileBytes = new byte[(int) file.length()];
+            /*fileInputStream = new FileInputStream(file);
             bufferedInputStream = new BufferedInputStream(fileInputStream);
-            bufferedInputStream.read(fileBytes, 0, fileBytes.length);
+            bufferedInputStream.read(fileBytes, 0, fileBytes.length);*/
             System.out.println("haj");
             outputStream = newSocket.getOutputStream();
-            outputStream.write(fileBytes, 0, fileBytes.length);
+            outputStream.write(fileBytesArray, 0, fileBytesArray.length);
             outputStream.flush();
 
         } catch (IOException e) {

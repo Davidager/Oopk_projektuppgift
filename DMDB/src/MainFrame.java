@@ -20,7 +20,7 @@ public class MainFrame extends JFrame implements ActionListener {
     private ListeningThread listeningThread;
     private ChatThread chatThread;
     private int serverPortNumber, hostPortNumber;
-    private InetAddress hostIP;
+    private String hostIP;
     public static AtomicInteger atomicInteger = new AtomicInteger();
 
 
@@ -68,7 +68,9 @@ public class MainFrame extends JFrame implements ActionListener {
 
     public void okClientButtonPressed(String name, Color textColor){
         try{
+            System.out.println(hostIP + " " + hostPortNumber);
             Socket socket = new Socket(hostIP, hostPortNumber);
+
             requestConnection(socket, name);
             chatThread = new ChatThread(socket, name, textColor);
             chatThread.start();
@@ -94,12 +96,9 @@ public class MainFrame extends JFrame implements ActionListener {
             Color textColor = getColor();
             if (name.length() != 0 && textClientPort.getText().length() != 0 && textClientIP.getText().length() !=0){
                 hostPortNumber = Integer.parseInt(textClientPort.getText());
-                try{
-                    hostIP = InetAddress.getByName(textClientIP.getText());
-                }catch(UnknownHostException e1){
-                    System.out.println("IP failed: " + hostIP);
-                    System.exit(-1);
-                }
+
+                hostIP = textClientIP.getText();
+
                 okClientButtonPressed(name, textColor);
             }
         }

@@ -4,7 +4,10 @@ import javax.swing.event.CaretListener;
 import javax.swing.text.*;
 import java.awt.*;
 import java.awt.event.*;
+import java.io.BufferedInputStream;
 import java.io.File;
+import java.io.FileInputStream;
+import java.io.IOException;
 
 /**
  * Created by Dexter on 2017-02-22.
@@ -184,6 +187,14 @@ public class ChatFrame extends JFrame implements ActionListener{
         }
     }
 
+    protected void disableButtons() {
+        sendButton.setEnabled(false);
+        discButton.setEnabled(false);
+        fileButton.setEnabled(false);
+        aesButton.setEnabled(false);
+        caesarButton.setEnabled(false);
+    }
+
     protected void disconnect() {
         closeThread();
         frameClose();
@@ -251,22 +262,49 @@ public class ChatFrame extends JFrame implements ActionListener{
         return retString;
     }
 
-    protected void submitFile(File file, String filetext) {
+    protected void submitFile(File file, String filetext, String encryptionType) {
         //String hexaColor = String.format("#%02X%02X%02X", myColor.getRed(),
+
+        String encryptionKey = "";
         //  myColor.getGreen(), myColor.getBlue());
         //String standardFileText = "Förfrågan om att skicka följande fil: " + file.getName() + ". Vill du mottaga denna fil?";
-        String fileMessage = submitFileHelper(file, filetext);
-        System.out.println(fileMessage);
         FileThread fileThread = new FileThread(chatThread.getSocket());
+        String fileMessage = submitFileHelper(file, filetext, encryptionType, fileThread);
+        System.out.println(fileMessage);
+
         fileThread.setFile(file);
         fileThread.startListeningForResponse();
         chatThread.sendText(fileMessage);
     }
 
-    protected String submitFileHelper(File file, String filetext) {
+    protected String submitFileHelper(File file, String filetext, String encryptionType, FileThread fileThread) {
+        byte[] fileBytes = new byte[(int) file.length()];
+        String encryptionKey = "";
+        try {
+            FileInputStream fileInputStream = new FileInputStream(file);
+            BufferedInputStream bufferedInputStream = new BufferedInputStream(fileInputStream);
+            bufferedInputStream.read(fileBytes, 0, fileBytes.length);
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
+        if (encryptionType.equals("AES")) {
+            String[] encryptedArray = EncryptionClass.encryptFileAES(fileBytes);
+            encryptionKey = encryptedArray[0];
+            fileBytes = EncryptionClass.hexStringToByteArray(encryptedArray[1]);
+        } else if (encryptionType.equals("caesar")) {
+            String[] encryptedArray = EncryptionClass.encryptFileCaesar(fileBytes);
+            encryptionKey = encryptedArray[0];
+            fileBytes = EncryptionClass.hexStringToByteArray(encryptedArray[1]);
+        }
+
+        fileThread.setFileByteArray(fileBytes);
+
         String retString = "<message sender=\"" + myName + "\"><filerequest name=\""
-                + file.getName() + "\" size=\"" + file.length() + "\">" + filetext
-                + "</filerequest></message>";
+                + file.getName() + "\" size=\"" + file.length() + "\"";
+        if (encryptionType.equals("caesar")||encryptionType.equals("AES")) {
+            retString = retString + " type=\"" + encryptionType + "\" key=\"" + encryptionKey + "\"";
+        }
+        retString = retString + ">" + filetext + "</filerequest></message>";
         return retString;
     }
 
@@ -279,6 +317,19 @@ public class ChatFrame extends JFrame implements ActionListener{
 
         try {
             chatDoc.insertString(chatDoc.getLength(), name + ": " + text + "\n", keyWord);
+        } catch (Exception e) {
+            System.out.println(e);
+        }
+    }
+
+    public void writeDiscMessage(String name) {
+        StyledDocument chatDoc = chatText.getStyledDocument();
+
+        SimpleAttributeSet keyWord = new SimpleAttributeSet();
+
+
+        try {
+            chatDoc.insertString(chatDoc.getLength(), name + " har loggat ut!" + "\n", keyWord);
         } catch (Exception e) {
             System.out.println(e);
         }
@@ -300,15 +351,20 @@ public class ChatFrame extends JFrame implements ActionListener{
     }
 
     private String formatAndEncode(String textMessage) {
+        textMessage = textMessage.replaceAll("&", "&amp;");
+       // textMessage = textMessage.replaceAll("&lt;", "&amp;lt;");
+        //textMessage = textMessage.replaceAll("&gt;", "&amp;gt;");
         textMessage = textMessage.replaceAll("<", "&lt;");
         textMessage = textMessage.replaceAll(">", "&gt;");
+        String xmlName = myName.replaceAll("<", "&lt;");
+        xmlName = xmlName.replaceAll(">", "&gt;");
 
         String hexaColor = String.format("#%02X%02X%02X", myColor.getRed(),
                 myColor.getGreen(), myColor.getBlue());
 
         StringBuilder sb = new StringBuilder();
         sb.append("<message sender=\"");
-        sb.append(myName);
+        sb.append(xmlName);
         sb.append("\">");
 
         String stateString = "";

@@ -58,19 +58,23 @@ public class ChatThread extends Thread implements Runnable{
                 System.out.println(s);
                 if (s==null){
                     System.out.println("Server disconnect");
-                    chatFrame.frameClose();
+                    //chatFrame.frameClose();
                     done = true;
                 }else {
                     String[] parsedArray = XmlParser.parse(s);
                     if (parsedArray[0].equals("text")){
                         chatFrame.writeToChat(parsedArray[1], parsedArray[2], Color.decode(parsedArray[3]));
                     } else if (parsedArray[0].equals("filerequest")) {
-                        new ReceiveFileFrame(this, parsedArray[1], parsedArray[2], parsedArray[3], parsedArray[4]);
+                        new ReceiveFileFrame(this, parsedArray[1], parsedArray[2], parsedArray[3], parsedArray[4], parsedArray[5], parsedArray[6]);
                     } else if (parsedArray[0].equals("keyrequest")) {
                         sendText("<message sender=\"" + name + "\"><text color=\""
                                 + String.format("#%02X%02X%02X", textColor.getRed(),
                                 textColor.getGreen(), textColor.getBlue()) + "\">" +
                                 "Detta program skickar ingen nyckel!" + "</text></message>");
+                    } else if (parsedArray[0].equals("disconnect")) {
+                        chatFrame.writeDiscMessage(parsedArray[1]);
+                        chatFrame.disableButtons();
+
                     }
 
                 }
@@ -89,6 +93,7 @@ public class ChatThread extends Thread implements Runnable{
     }
 
     public void closeThread(){
+        sendText("<message sender=\"" + name + "\"><disconnect/></message>");
         try {
             socket.close();
         } catch (IOException e) {
@@ -103,7 +108,7 @@ public class ChatThread extends Thread implements Runnable{
 
     public void sendText(String str){
         outText.println(str);
-        System.out.println(str + "from chatThread sendtext");
+        //System.out.println(str + "from chatThread sendtext");
     }
 
     public void receiveText(String str){

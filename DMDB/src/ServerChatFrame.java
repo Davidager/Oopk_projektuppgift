@@ -92,14 +92,15 @@ public class ServerChatFrame extends ChatFrame{
         }
     }
 
-    public int getServerNumber() {
-        return serverNumber;
+    public int getServerNumber() { return serverNumber;
     }
 
-    protected void submitFile(File file, String fileInfo, Socket socket) {
-        String fileMessage = submitFileHelper(file, fileInfo);
-        System.out.println(fileMessage);
+    protected void submitFile(File file, String fileInfo, Socket socket, String encryptionType) {
+        String encryptionKey = "";
         FileThread fileThread = new FileThread(socket);
+        String fileMessage = submitFileHelper(file, fileInfo, encryptionType, fileThread);
+        System.out.println(fileMessage);
+
         fileThread.setFile(file);
         fileThread.startListeningForResponse();
         try {

@@ -10,18 +10,20 @@ import java.net.Socket;
 public class ReceiveFileFrame extends JFrame implements ActionListener{
     private ChatThread chatThread;
     private ServerChatThread serverChatThread;
-    private String fileInfo, fileName, fileSize, name;
+    private String fileInfo, fileName, fileSize, name, cryptoType, cryptoKey;
     private JButton accept,deny;
     private JTextField infoResponse;
     private Socket socket;
     private boolean chatThreadYes;
     private ServerChatThread.ReceivingThread receivingThread;
 
-    public ReceiveFileFrame(String fileInfo, String name, String fileName, String fileSize){
+    public ReceiveFileFrame(String fileInfo, String name, String fileName, String fileSize, String cryptoType, String cryptoKey){
         this.fileInfo = fileInfo;
         this.fileName = fileName;
         this.fileSize = fileSize;
         this.name = name;
+        this.cryptoType = cryptoType;
+        this.cryptoKey = cryptoKey;
 
         setLayout(new BoxLayout(getContentPane(), BoxLayout.PAGE_AXIS));
         JLabel lab = new JLabel("Avsändare: " + name);
@@ -54,15 +56,15 @@ public class ReceiveFileFrame extends JFrame implements ActionListener{
         pack();
         setVisible(true);
     }
-    public ReceiveFileFrame(ChatThread chatThread, String fileInfo, String name, String fileName, String fileSize) {
-        this(fileInfo, name, fileName, fileSize);
+    public ReceiveFileFrame(ChatThread chatThread, String fileInfo, String name, String fileName, String fileSize, String cryptoType, String cryptoKey) {
+        this(fileInfo, name, fileName, fileSize, cryptoType, cryptoKey);
         chatThreadYes = true;
         this.chatThread = chatThread;
 
     }
 
-    public ReceiveFileFrame(ServerChatThread serverChatThread, ServerChatThread.ReceivingThread receivingThread, String fileInfo, String name, String fileName, String fileSize) {
-        this(fileInfo, name, fileName, fileSize);
+    public ReceiveFileFrame(ServerChatThread serverChatThread, ServerChatThread.ReceivingThread receivingThread, String fileInfo, String name, String fileName, String fileSize, String cryptoType, String cryptoKey) {
+        this(fileInfo, name, fileName, fileSize, cryptoType, cryptoKey);
         chatThreadYes = false;
         this.serverChatThread = serverChatThread;
         this.receivingThread = receivingThread;
@@ -91,6 +93,7 @@ public class ReceiveFileFrame extends JFrame implements ActionListener{
 
                 chatThread.sendText(fileMessage);
                 FileThread fileThread = new FileThread(chatThread.getSocket());
+                fileThread.setCryptoInfo(cryptoType, cryptoKey);
                 fileThread.startReceivingFile(port, fileSize, fileName);
             }
             if (e.getSource() == deny) {
@@ -109,6 +112,7 @@ public class ReceiveFileFrame extends JFrame implements ActionListener{
                         + "#7c7777" + "\">" + "Startar filöverföring" + "</text></message>");
                 receivingThread.sendToOne(fileMessage);
                 FileThread fileThread = new FileThread(receivingThread.getThreadSocket());
+                fileThread.setCryptoInfo(cryptoType, cryptoKey);
                 fileThread.startReceivingFile(port, fileSize, fileName);
             }
             if (e.getSource() == deny) {

@@ -1,4 +1,5 @@
 import org.w3c.dom.Document;
+import org.w3c.dom.Element;
 import org.w3c.dom.Node;
 import org.w3c.dom.NodeList;
 import org.w3c.dom.ls.DOMImplementationLS;
@@ -19,7 +20,7 @@ import java.io.StringReader;
  */
 public class XmlParser {
     public static String[] parse(String xmlString) {
-        StringBuilder retsb = new StringBuilder();  //TODO: hantera < och såklart &gt; som Andreas sade
+        StringBuilder retsb = new StringBuilder();
         try {
             DocumentBuilder db = DocumentBuilderFactory.newInstance().newDocumentBuilder();
             Document doc = db.parse(new InputSource(new StringReader(xmlString)));
@@ -44,6 +45,9 @@ public class XmlParser {
                         //return new String[]{(String)retArray[1], retArray[2], retArray[3], retArray[4]};
                     }
                     if(retArray[0].equals("fileresponse")) {
+                        return (String[])retArray;
+                    }
+                    if (retArray[0].equals("disconnect")) {
                         return (String[])retArray;
                     }
 
@@ -119,14 +123,21 @@ public class XmlParser {
             String fileName = nodeItem.getAttributes().getNamedItem("name").getNodeValue();
             String fileSize = nodeItem.getAttributes().getNamedItem("size").getNodeValue();
             sb.append(nodeItem.getTextContent());
-            String s = "krypto";
-            return new String[]{"filerequest", sb.toString(), name,  fileName, fileSize};
+            Element el = (Element)nodeItem;
+            if (el.hasAttribute("type")) {
+                String cryptoType = nodeItem.getAttributes().getNamedItem("type").getNodeValue();
+                String cryptoKey = nodeItem.getAttributes().getNamedItem("key").getNodeValue();
+                return new String[]{"filerequest", sb.toString(), name,  fileName, fileSize, cryptoType, cryptoKey};
+            }
+            return new String[]{"filerequest", sb.toString(), name, fileName, fileSize, "", ""};
         } else if (nodeItem.getNodeName().equals("fileresponse")) {
             System.out.println("fileresponse" + "xmli");
             String reply = nodeItem.getAttributes().getNamedItem("reply").getNodeValue();
             String port = nodeItem.getAttributes().getNamedItem("port").getNodeValue();
             sb.append(nodeItem.getTextContent());
             return new String[]{"fileresponse", sb.toString(), reply, port};
+        } else if (nodeItem.getNodeName().equals("disconnect")) {
+            return new String[]{"disconnect", name};
         }
         return new Object[]{"text", sb, colorString};
     }

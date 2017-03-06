@@ -92,6 +92,7 @@ public class ServerChatThread extends ChatThread implements Runnable {
     }
 
     public void removeSocket(Socket removeSocket){
+        socketPrintWriterHashtable.get(removeSocket).println("<message sender=\"" + name + "\"><disconnect/></message>");
         socketPrintWriterHashtable.remove(removeSocket);
         if (socketandNameHashTable.containsKey(removeSocket)) {
             socketandNameHashTable.remove(removeSocket);
@@ -107,6 +108,7 @@ public class ServerChatThread extends ChatThread implements Runnable {
         try{
             removeFromThreadList();
             for (Socket key : socketPrintWriterHashtable.keySet()) {
+                socketPrintWriterHashtable.get(key).println("<message sender=\"" + name + "\"><disconnect/></message>");
                 key.close();
             }
         } catch (IOException e) {
@@ -156,9 +158,13 @@ public class ServerChatThread extends ChatThread implements Runnable {
                     System.out.println(s + "from serverchatthread");
                     if (s==null){
                         System.out.println("Server disconnect in receivThread");
-                        removeSocket(threadSocket);
+                        socketPrintWriterHashtable.remove(threadSocket);
+                        if (socketandNameHashTable.containsKey(threadSocket)) {
+                            socketandNameHashTable.remove(threadSocket);
+                        }
                         if (socketPrintWriterHashtable.isEmpty()) {
-                            serverChatFrame.frameClose();
+                            //serverChatFrame.frameClose();  //TODO mark
+                            serverChatFrame.disableButtons();
                             removeFromThreadList();
                         }
                         done = true;
@@ -176,13 +182,15 @@ public class ServerChatThread extends ChatThread implements Runnable {
                             serverChatFrame.writeToChat(parsedArray[1], parsedArray[2], Color.decode(parsedArray[3]));
                         } else if (parsedArray[0].equals("filerequest")) {
                             new ReceiveFileFrame(ServerChatThread.this, this,
-                                    parsedArray[1], parsedArray[2], parsedArray[3], parsedArray[4]);
+                                    parsedArray[1], parsedArray[2], parsedArray[3], parsedArray[4], parsedArray[5], parsedArray[6]);
 
                         } else if (parsedArray[0].equals("keyrequest")) {
                             sendToOne("<message sender=\"" + name + "\"><text color=\""
                                     + String.format("#%02X%02X%02X", textColor.getRed(),
                                     textColor.getGreen(), textColor.getBlue()) + "\">" +
                                     "Detta program skickar ingen nyckel!" + "</text></message>");
+                        } else if (parsedArray[0].equals("disconnect")) {
+                            serverChatFrame.writeDiscMessage(parsedArray[1]);
                         }
 
 
