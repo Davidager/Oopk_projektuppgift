@@ -17,7 +17,7 @@ import java.util.concurrent.*;
 public class FileThread extends Thread implements Runnable {
     private String infoResponse;
     private ChatThread chatThread;
-    //BufferedReader myInText;
+    BufferedReader myInText;
     Socket socket;
     File file;
 
@@ -67,6 +67,13 @@ public class FileThread extends Thread implements Runnable {
                         InputStream is = clientSocket.getInputStream();
                         fileOutputStream = new FileOutputStream(filePath);
                         bufferedOutputStream = new BufferedOutputStream(fileOutputStream);
+
+                        ProgressMonitorInputStream input = new ProgressMonitorInputStream(
+                                null,
+                                "Reading: " + file,
+                                is);
+                        ProgressMonitor monitor = input.getProgressMonitor();
+
                         bytesRead = is.read(myByteArray,0,myByteArray.length);
                         current = bytesRead;
 
@@ -74,8 +81,9 @@ public class FileThread extends Thread implements Runnable {
                             bytesRead =
                                     is.read(myByteArray, current, (myByteArray.length-current));
                             if(bytesRead >= 0) current += bytesRead;
-                        } while(bytesRead > -1);
-
+                        } while(current < Integer.parseInt(fileSize));
+                        System.out.println("done");
+                        // input.close();
                         bufferedOutputStream.write(myByteArray, 0 , current);
                         bufferedOutputStream.flush();
                     } catch (IOException e) {
@@ -99,6 +107,7 @@ public class FileThread extends Thread implements Runnable {
             fileInputStream = new FileInputStream(file);
             bufferedInputStream = new BufferedInputStream(fileInputStream);
             bufferedInputStream.read(fileBytes, 0, fileBytes.length);
+            System.out.println("haj");
             outputStream = newSocket.getOutputStream();
             outputStream.write(fileBytes, 0, fileBytes.length);
             outputStream.flush();
@@ -109,6 +118,11 @@ public class FileThread extends Thread implements Runnable {
     }
 
     protected void startListeningForResponse() {
+        try {
+            myInText = new BufferedReader(new InputStreamReader(socket.getInputStream()));
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
         Thread helpThread = new Thread(new Runnable(){
             public void run(){
                 ExecutorService executor = Executors.newSingleThreadExecutor();
@@ -132,6 +146,12 @@ public class FileThread extends Thread implements Runnable {
         });
         helpThread.start();
 
+        /*try {
+            new PrintWriter(socket.getOutputStream(), true).println("<message sender=\"" + "System" + "\"><text color=\""
+                          + "#7c7777" + "\">" + "Startar filöverföring" + "</text></message>");
+        } catch (IOException e) {
+            e.printStackTrace();
+        }*/
     }
 
     protected class ListenForFileresponse implements Callable<Void>{
@@ -140,9 +160,9 @@ public class FileThread extends Thread implements Runnable {
 
         @Override
         public Void call() {
-            BufferedReader myInText;
-            try {
-                myInText = new BufferedReader(new InputStreamReader(socket.getInputStream()));
+            //BufferedReader myInText;
+
+                //myInText = new BufferedReader(new InputStreamReader(socket.getInputStream()));
                 Boolean done = false;
                 while(!done) {
                     try {
@@ -152,9 +172,12 @@ public class FileThread extends Thread implements Runnable {
                             System.out.println("fafa");
                             done = true;
                         } else {
-                            System.out.println(s);
+                            System.out.println(s + "from filethread");
                             String[] parsedArray = XmlParser.parse(s);
                             System.out.println(parsedArray[0] + "good job");
+                            System.out.println(s + " here in filet");
+                            String[] parsedArray2 = XmlParser.parse(s);
+                            System.out.println(parsedArray2[0]);
                             if (parsedArray[0].equals("fileresponse")) {
                                 if (parsedArray[2].equals("yes")) {
                                     FileThread.this.startSendingFile(parsedArray);
@@ -163,11 +186,10 @@ public class FileThread extends Thread implements Runnable {
                             }
                         }
                     } catch (IOException e) {
+                        e.printStackTrace();
                     }
                 }
-            } catch (IOException e) {
-                e.printStackTrace();
-            }
+
 
             return null;
         }

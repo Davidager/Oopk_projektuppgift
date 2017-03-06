@@ -43,6 +43,9 @@ public class XmlParser {
                         return (String[])retArray;
                         //return new String[]{(String)retArray[1], retArray[2], retArray[3], retArray[4]};
                     }
+                    if(retArray[0].equals("fileresponse")) {
+                        return (String[])retArray;
+                    }
 
                     /*
                     if (nodeItem.getNodeName().equals("text")) {
@@ -83,6 +86,7 @@ public class XmlParser {
 
     private static Object[] partParse(Node nodeItem, StringBuilder sb, String name, String colorString) throws IOException, SAXException, ParserConfigurationException {
         //colorString = "#000000";   //standardfärg svart
+        System.out.println(nodeItem.getNodeName());
         if (nodeItem.getNodeName().equals("text")) {
             colorString = nodeItem.getAttributes().getNamedItem("color").getNodeValue();
             sb.append(nodeItem.getTextContent());
@@ -118,7 +122,7 @@ public class XmlParser {
             String s = "krypto";
             return new String[]{"filerequest", sb.toString(), name,  fileName, fileSize};
         } else if (nodeItem.getNodeName().equals("fileresponse")) {
-            System.out.println("fileresponse");
+            System.out.println("fileresponse" + "xmli");
             String reply = nodeItem.getAttributes().getNamedItem("reply").getNodeValue();
             String port = nodeItem.getAttributes().getNamedItem("port").getNodeValue();
             sb.append(nodeItem.getTextContent());

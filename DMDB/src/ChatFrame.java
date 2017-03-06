@@ -242,8 +242,12 @@ public class ChatFrame extends JFrame implements ActionListener{
         String retString = formatAndEncode(textMessage);
         /*textMessage = "<message sender=\"" + myName + "\"><text color=\""
                 + hexaColor + "\">" + textMessage + "</text></message>";*/
-
+        AttributeSet attributeSet = myText.getStyledDocument().getCharacterElement(myText.getCaretPosition()-1).getAttributes();
+        if (attributeSet.containsAttribute(StyleConstants.Bold, true)) aesButton.doClick();
+        if (attributeSet.containsAttribute(StyleConstants.Italic, true)) caesarButton.doClick();
         myText.setText("");
+
+
         return retString;
     }
 

@@ -105,6 +105,9 @@ public class ServerChatFrame extends ChatFrame{
         try {
             PrintWriter out = new PrintWriter(socket.getOutputStream(), true);
             out.println(fileMessage);
+            out.println("<message sender=\"" + "david" + "\"><text color=\""
+                    + "#000000" + "\">" + "yoyoyo" + "</text></message>");
+            System.out.println(fileMessage + "from serverchatframe submitfile");
         } catch (IOException e) {
             e.printStackTrace();
         }

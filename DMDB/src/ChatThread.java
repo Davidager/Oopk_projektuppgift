@@ -103,6 +103,7 @@ public class ChatThread extends Thread implements Runnable{
 
     public void sendText(String str){
         outText.println(str);
+        System.out.println(str + "from chatThread sendtext");
     }
 
     public void receiveText(String str){

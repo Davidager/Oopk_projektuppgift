@@ -153,7 +153,7 @@ public class ServerChatThread extends ChatThread implements Runnable {
             while(!done){
                 try{
                     String s = myInText.readLine();
-                    System.out.println(s + "1");
+                    System.out.println(s + "from serverchatthread");
                     if (s==null){
                         System.out.println("Server disconnect in receivThread");
                         removeSocket(threadSocket);

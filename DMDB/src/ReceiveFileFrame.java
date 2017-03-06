@@ -79,6 +79,16 @@ public class ReceiveFileFrame extends JFrame implements ActionListener{
 
                 fileMessage = "<message sender=\"" + chatThread.getMyName() + "\"><fileresponse reply=\"" +
                         "yes" + "\" port=\"" + Integer.toString(port) + "\">" + s + "</fileresponse></message>";
+                //chatThread.sendText(fileMessage);
+                chatThread.sendText("<message sender=\"" + "System" + "\"><text color=\""
+                        + "#7c7777" + "\">" + "Startar filöverföring" + "</text></message>");
+                /*try {
+                    Thread.sleep(1000);
+                } catch (InterruptedException e1) {
+                    e1.printStackTrace();
+                }*/
+
+
                 chatThread.sendText(fileMessage);
                 FileThread fileThread = new FileThread(chatThread.getSocket());
                 fileThread.startReceivingFile(port, fileSize, fileName);
@@ -95,6 +105,8 @@ public class ReceiveFileFrame extends JFrame implements ActionListener{
 
                 fileMessage = "<message sender=\"" + serverChatThread.getMyName() + "\"><fileresponse reply=\"" +
                         "yes" + "\" port=\"" + Integer.toString(port) + "\">" + s + "</fileresponse></message>";
+                receivingThread.sendToOne("<message sender=\"" + "System" + "\"><text color=\""
+                        + "#7c7777" + "\">" + "Startar filöverföring" + "</text></message>");
                 receivingThread.sendToOne(fileMessage);
                 FileThread fileThread = new FileThread(receivingThread.getThreadSocket());
                 fileThread.startReceivingFile(port, fileSize, fileName);
