@@ -13,6 +13,7 @@ import java.util.Hashtable;
  */
 public class FileFrame extends JFrame implements ActionListener {
     private JButton selectFile, sendFile, cancel;
+    private JToggleButton aesButton, caesarButton;
     private File selectedFile;
     private JComboBox selectFileRecipient;
     private JTextPane fileInfo;
@@ -25,6 +26,8 @@ public class FileFrame extends JFrame implements ActionListener {
         selectFile = new JButton("Välj fil");
         sendFile = new JButton("Skicka");
         cancel = new JButton("Avbryt");
+        aesButton = new JToggleButton("AES");
+        caesarButton = new JToggleButton("Caesar");
         JLabel label = new JLabel("OBS! Filer kan endast skickas till servern.");
         fileInfo = new JTextPane();
         fileInfo.setPreferredSize(new Dimension(300,50));
@@ -38,10 +41,13 @@ public class FileFrame extends JFrame implements ActionListener {
         //add(selectFile);
         //add(selectFileRecipient);
         JPanel pan2 = new JPanel();
-        pan2.setLayout(new GridLayout(1, 2));
+        pan2.setLayout(new GridLayout(2, 2));
         add(fileInfo);
+        pan2.add(aesButton);
+        pan2.add(caesarButton);
         pan2.add(cancel);
         pan2.add(sendFile);
+
         add(pan2);
 
         //add(sendFile);
@@ -49,6 +55,8 @@ public class FileFrame extends JFrame implements ActionListener {
         selectFile.addActionListener(this);
         sendFile.addActionListener(this);
         cancel.addActionListener(this);
+        aesButton.addActionListener(this);
+        caesarButton.addActionListener(this);
 
 
     }
@@ -107,7 +115,15 @@ public class FileFrame extends JFrame implements ActionListener {
             //chatFrame.writeToChat(s, chatFrame.getMyName(), chatFrame.getMyColor());
             try {
 
-                if (chatFrameYes){ chatFrame.submitFile(selectedFile, fileInfo.getText());}
+                if (chatFrameYes){
+                    if (aesButton.isEnabled()){
+                        chatFrame.submitFile(selectedFile, fileInfo.getText());
+                    } else if (caesarButton.isEnabled()){
+                        chatFrame.submitFile(selectedFile, fileInfo.getText());
+                    } else{
+                        chatFrame.submitFile(selectedFile, fileInfo.getText());
+                    }
+                }
                 else{
                     PossibilityHelper posHelper = (PossibilityHelper)selectFileRecipient.getSelectedItem();
                     serverChatFrame.submitFile(selectedFile, fileInfo.getText(), posHelper.getSocket());}
@@ -123,6 +139,25 @@ public class FileFrame extends JFrame implements ActionListener {
         if (e.getSource() == cancel){
             setVisible(false);
             dispose();
+        }
+        if (e.getSource() == aesButton) {
+
+            if (caesarButton.isSelected()){
+                aesButton.setSelected(false);
+                caesarButton.doClick();
+                aesButton.setSelected(true);
+
+            }
+
+        }
+        if (e.getSource() == caesarButton) {
+            if (aesButton.isSelected()) {
+                caesarButton.setSelected(false);
+                aesButton.doClick();
+                caesarButton.setSelected(true);
+
+            }
+
         }
     }
 }
